@@ -5,7 +5,7 @@
 	<meta charset="utf-8" />
 	<title> Homework #3: Music Synthesizer  </title>
 	<script type="text/javascript" src="NexusUI.js"></script>
-	<script type="text/javascript" src="hw3.js"></script>
+	<script type="text/javascript" src="tr808.js"></script>
 	<link  href='hw3.css' rel='stylesheet'>
 </head>
 
@@ -22,8 +22,8 @@
 	</div>
 	<div id="sequencer"></div>
 	<div id="transport">
-		<p class="panel_label"> Play/Stop </p>
 		<p id="play_button"> </p>
+		<p id="reset_button"> </p>
 	</div>
 	<div id="tempo">
 		<div>
@@ -76,6 +76,24 @@ sequencer.matrix.set.row(4,[0,0,0,0,1,0,0,0,0,0,1,0,0,1,0,0]);
 sequencer.matrix.set.row(5,[1,0,0,0,0,0,0,0,1,0,0,0,1,0,1,0]);
 
 
+
+var reset_button = new Nexus.TextButton('#reset_button',{
+    'size': [150,50],
+    'mode': 'aftertouch',
+    'state': false,
+    'text': 'Reset',
+    'alternateText': 'Randomize'
+})
+
+reset_button.on('change',function(v) {
+    if (v == 1) {
+        sequencer.matrix.populate.all([0]);
+    }
+    else {
+        sequencer.matrix.populate.all([0.2])
+    }
+})
+
 // play/stop button
 var play_button = new Nexus.TextButton('#play_button',{
   'size': [150,50],
@@ -91,7 +109,7 @@ var tempo_dial = new Nexus.Dial('#tempo_dial',{
   'interaction': 'radial', // "radial", "vertical", or "horizontal"
   'mode': 'absolute', // "absolute" or "relative"
   'min': 60,
-  'max': 180,
+  'max': 200,
   'step': 1,
   'value': 120
 })
@@ -174,46 +192,47 @@ play_button.on('change',function(v) {
 tempo_dial.on('change',function(v) {
 	// convert BPM to internal in milisecond
 	// note that 4 steps correspond to one beat in the sequencer
-	var inverval = 10;   // <-- replace this with the BPM-to-ms conversion equation
+	var inverval = 15000/v;   // <-- replace this with the BPM-to-ms conversion equation
 	sequencer.interval.ms(inverval)
 })
 
 
 filter_onoff.on('change',function(v) {
-	// set_filter_onoff(v);
-})
+     console.log(v)
+	   set_filter_onoff(v);
+ })
 
 // Filter freq
 filter_dial1.on('change',function(v) {
-	// set_filter_freq(v);
-})
+	   set_filter_freq(v);
+ })
 
 
 // Filter freq
 filter_dial2.on('change',function(v) {
-	// set_filter_q(v);
-})
+	   set_filter_q(v);
+ })
 
 
 // event-trigger
 sequencer.on('step',function(v) {
 	if (v[0] == 1) {
-		// play_kick();
+		  play_kick();
 	}
 	if (v[1] == 1) {
-		// play_snare();
+		  play_snare();
 	}
 	if (v[2] == 1) {
-		// play_close_hihat();
+		  play_close_hihat();
 	}
 	if (v[3] == 1) {
-		// play_lowtom();
+		  play_lowtom();
 	}
 	if (v[4] == 1) {
-		// play_midtom();
+		  play_midtom();
 	}
 	if (v[5] == 1) {
-		// play_hightom();
+		  play_hightom();
 	}
 })
 
