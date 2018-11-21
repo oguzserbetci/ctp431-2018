@@ -154,7 +154,7 @@ MySynth.prototype.trigger = function(time) {
     this.osc1Envelope.gain.exponentialRampToValueAtTime(this.sustain, time + this.attacktime + this.decaytime);
     this.osc1Envelope.gain.exponentialRampToValueAtTime(0.01, time + this.attacktime + this.decaytime + this.releasetime);
     this.osc1.start(time);
-    this.osc1.stop(time + this.attacktime + this.decaytime);
+    this.osc1.stop(time + this.attacktime + this.decaytime + this.releasetime);
 
 
     this.osc2Envelope.gain.setValueAtTime(0.01, time);
@@ -162,17 +162,17 @@ MySynth.prototype.trigger = function(time) {
     this.osc2Envelope.gain.exponentialRampToValueAtTime(this.sustain, time + this.attacktime + this.decaytime);
     this.osc2Envelope.gain.exponentialRampToValueAtTime(0.01, time + this.attacktime + this.decaytime + this.releasetime);
     this.osc2.start(time);
-    this.osc2.stop(time + this.attacktime + this.decaytime);
+    this.osc2.stop(time + this.attacktime + this.decaytime + this.releasetime);
 
-    this.noiseEnvelope.gain.setValueAtTime(this.amp_gain/5.0, time);
-    this.noiseEnvelope.gain.exponentialRampToValueAtTime(0.01, time + this.attacktime + this.decaytime);
+    // this.noiseEnvelope.gain.setValueAtTime(this.amp_gain/5.0, time);
+    // this.noiseEnvelope.gain.exponentialRampToValueAtTime(0.01, time + this.attacktime + this.decaytime);
 
-    this.noise.start(time);
-    this.noise.stop(time + this.attacktime + this.decaytime);
+    // this.noise.start(time);
+    // this.noise.stop(time + this.attacktime);
 };
 
 function play_mysynth() {
-    var mysynth = new MySynth(context, 1000, 0.1, 0.1, 0.3, 0.1);
+    var mysynth = new MySynth(context, 1000, 0.03, 0.1, 0.3, 1);
     var now = context.currentTime;
     mysynth.trigger(now);
 }
