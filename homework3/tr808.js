@@ -2,8 +2,10 @@ window.AudioContext = window.AudioContext || window.webkitAudioContext;
 var context = new AudioContext();
 
 var filter_on = false;
+var distortion_amount = 2000;
 var filter_freq = 1000;
 var filter_q = 1;
+var distortion = false;
 
 
 // select a preset
@@ -21,6 +23,155 @@ window.onload = function() {
 
 }
 
+function MySynth(context, highpass_freq, attacktime, decaytime, sustain, releasetime) {
+    this.context = context;
+
+    this.highpass_frequency = highpass_freq;
+
+    this.amp_gain = 1.0;
+    this.attacktime = attacktime;
+    this.decaytime = decaytime;
+    this.sustain = sustain;
+    this.releasetime = releasetime;
+};
+
+// generate a wavetable for white noise 
+MySynth.prototype.noiseBuffer = function() {
+    var bufferSize = this.context.sampleRate;
+    var buffer = this.context.createBuffer(1, bufferSize, this.context.sampleRate);
+    var output = buffer.getChannelData(0);
+
+    for (var i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+    }
+
+    return buffer;
+};
+
+// helper
+function connect(context, nodes) {
+    nodes.push(context.destination);
+    for (var i = 0; i < nodes.length - 1; i++) {
+        nodes[i].connect(nodes[i+1]);
+    }
+}
+
+function filterNode(context, type, freq, q) {
+    var filter = context.createBiquadFilter();
+    filter.type = type;
+    filter.frequency.value = freq;
+    filter.Q.value = q;
+    return filter;
+}
+
+function gainNode(context, val) {
+    var gain = context.createGain();
+    gain.gain.value = val;
+    return gain;
+}
+
+function distortionNode(context, ammount) {
+    var distortion = context.createWaveShaper();
+
+    var k = typeof amount === 'number' ? amount : 50,
+        n_samples = 44100,
+        curve = new Float32Array(n_samples),
+        deg = Math.PI / 180,
+        i = 0,
+        x;
+    for ( ; i < n_samples; ++i ) {
+        x = i * 2 / n_samples - 1;
+        curve[i] = ( 3 + k ) * x * 20 * deg / ( Math.PI + k * Math.abs(x) );
+    }
+    distortion.curve = curve;
+    distortion.oversample = '4x';
+
+    return distortion;
+}
+
+MySynth.prototype.setup = function() {
+    var osc1 = [];
+    // oscillator
+    this.osc1 = this.context.createOscillator();
+    this.osc1.type = "triangle";
+    osc1.push(this.osc1);
+    if (filter_on) {
+        var osc1_filter = filterNode(this.context, "highpass", filter_freq, filter_q);
+        osc1.push(osc1_filter);
+    }
+    if (distortion) {
+        console.log('DISTORTION')
+        var osc1_distortion = distortionNode(this.context, distortion_amount);
+        osc1.push(osc1_distortion);
+    }
+    this.osc1Envelope = gainNode(this.context, 0.5);
+    osc1.push(this.osc1Envelope);
+    connect(this.context, osc1);
+    console.log(osc1);
+
+    var osc2 = [];
+    this.osc2 = this.context.createOscillator();
+    this.osc2.type = "square";
+    if (filter_on) {
+        var osc2_filter = filterNode(this.context, "highpass", filter_freq, filter_q);
+        osc2.push(osc1_filter);
+    }
+    if (distortion) {
+        console.log('DISTORTION')
+        var osc2_distortion = distortionNode(this.context, distortion_amount);
+        osc2.push(osc1_distortion);
+    }
+    this.osc2Envelope = gainNode(this.context, 0.5);
+    osc2.push(this.osc2Envelope);
+    connect(this.context, osc2);
+
+    // white noise
+    this.noise = this.context.createBufferSource();
+    this.noise.buffer = this.noiseBuffer();
+    this.noiseEnvelope = gainNode(this.context, 1.0);
+    // highpass filter
+    var noiseFilter = filterNode(this.context, "highpass", this.highpass_frequency, 1);
+    connect(this.context, [this.noise, noiseFilter, this.noiseEnvelope]);
+};
+
+MySynth.prototype.trigger = function(time) {
+    this.setup();
+
+    this.osc1.frequency.exponentialRampToValueAtTime(500, time + this.attacktime + this.decaytime);
+    this.osc2.frequency.exponentialRampToValueAtTime(500, time + this.attacktime + this.decaytime);
+
+    this.osc1Envelope.gain.setValueAtTime(0.01, time);
+    this.osc1Envelope.gain.linearRampToValueAtTime(this.amp_gain/3.0, time + this.attacktime);
+    this.osc1Envelope.gain.exponentialRampToValueAtTime(this.sustain, time + this.attacktime + this.decaytime);
+    this.osc1Envelope.gain.exponentialRampToValueAtTime(0.01, time + this.attacktime + this.decaytime + this.releasetime);
+    this.osc1.start(time);
+    this.osc1.stop(time + this.attacktime + this.decaytime);
+
+
+    this.osc2Envelope.gain.setValueAtTime(0.01, time);
+    this.osc2Envelope.gain.linearRampToValueAtTime(this.amp_gain/3.0, time + this.attacktime);
+    this.osc2Envelope.gain.exponentialRampToValueAtTime(this.sustain, time + this.attacktime + this.decaytime);
+    this.osc2Envelope.gain.exponentialRampToValueAtTime(0.01, time + this.attacktime + this.decaytime + this.releasetime);
+    this.osc2.start(time);
+    this.osc2.stop(time + this.attacktime + this.decaytime);
+
+    this.noiseEnvelope.gain.setValueAtTime(this.amp_gain/3.0, time);
+    this.noiseEnvelope.gain.exponentialRampToValueAtTime(0.01, time + this.attacktime + this.decaytime);
+
+    this.noise.start(time);
+    this.noise.stop(time + this.attacktime + this.decaytime);
+};
+
+function play_mysynth() {
+    var mysynth = new MySynth(context, 3000, 1, 0.01, 0.1, 1);
+    var now = context.currentTime;
+    mysynth.trigger(now);
+}
+
+function set_distortion(q) {
+    distortion = q;
+}
+
 function TR808Tone1(context, osc_frequency, osc_sweep, amp_gain, amp_decaytime) {
     this.context = context;
     this.osc_frequency = osc_frequency;
@@ -29,7 +180,7 @@ function TR808Tone1(context, osc_frequency, osc_sweep, amp_gain, amp_decaytime) 
     this.amp_decaytime = amp_decaytime;
 
     this.amp_attack_time = 0.0;
-    //		this.decay = 0.7;		
+    //		this.decay = 0.7;
 };
 
 // create and connect
@@ -157,6 +308,10 @@ function set_filter_freq(freq) {
 
 function set_filter_q(q) {
     filter_q = q;
+}
+
+function set_distortion(q) {
+    distortion = q;
 }
 
 function keyboardDown(key) {

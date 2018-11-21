@@ -6,6 +6,7 @@
 	<title> Homework #3: Music Synthesizer  </title>
 	<script type="text/javascript" src="NexusUI.js"></script>
 	<script type="text/javascript" src="tr808.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Comfortaa" rel="stylesheet">
 	<link  href='hw3.css' rel='stylesheet'>
 </head>
 
@@ -19,6 +20,8 @@
 	<p class="seq_Label"> Hi-Hat </p>
 	<p class="seq_Label"> Snare </p>
 	<p class="seq_Label"> Kick </p>
+	<p class="seq_Label"> Synth </p>
+	<p class="seq_Label"> Distortion </p>
 	</div>
 	<div id="sequencer"></div>
 	<div id="transport">
@@ -65,25 +68,30 @@
 var sequencer = new Nexus.Sequencer('#sequencer',{
  'size': [800,300],
  'mode': 'toggle',
- 'rows': 6,
+ 'rows': 8,
  'columns': 16
 })
-sequencer.colorize("fill","#888")
+ sequencer.colorize("fill","#FCF2CB")
+ sequencer.colorize("mediumLight","#1E4363")
+ sequencer.colorize("accent","#FFB00D")
 
 // initial pattern
-sequencer.matrix.set.row(3,[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]);
-sequencer.matrix.set.row(4,[0,0,0,0,1,0,0,0,0,0,1,0,0,1,0,0]);
-sequencer.matrix.set.row(5,[1,0,0,0,0,0,0,0,1,0,0,0,1,0,1,0]);
+ /* sequencer.matrix.set.row(3,[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]); */
+ /* sequencer.matrix.set.row(4,[0,0,0,0,1,0,0,0,0,0,1,0,0,1,0,0]); */
+ /* sequencer.matrix.set.row(5,[1,0,0,0,0,0,0,0,1,0,0,0,1,0,1,0]); */
+ sequencer.matrix.set.row(6,[1,0,0,1,0,1,0,0,1,0,1,0,1,0,1,0]);
 
 
 
 var reset_button = new Nexus.TextButton('#reset_button',{
     'size': [150,50],
-    'mode': 'aftertouch',
+     /* 'mode': 'aftertouch', */
     'state': false,
     'text': 'Reset',
     'alternateText': 'Randomize'
 })
+ reset_button.colorize("accent","#FFB00D")
+
 
 reset_button.on('change',function(v) {
     if (v == 1) {
@@ -101,7 +109,10 @@ var play_button = new Nexus.TextButton('#play_button',{
   'text': 'Play',
   'alternate': false,
   'alternateText': 'Stop'
+  
 })
+ play_button.colorize("accent","#FFB00D")
+
 
 // tempo
 var tempo_dial = new Nexus.Dial('#tempo_dial',{
@@ -113,6 +124,7 @@ var tempo_dial = new Nexus.Dial('#tempo_dial',{
   'step': 1,
   'value': 120
 })
+ tempo_dial.colorize("accent","#FFB00D")
 
 var tempo_number = new Nexus.Number('#tempo_number',{
   'size': [60,30],
@@ -131,6 +143,7 @@ var filter_onoff = new Nexus.Toggle('#filter_onoff',{
     'size': [100,20],
     'state': false
 })
+ filter_onoff.colorize("accent","#FFB00D")
 
 var filter_dial1 = new Nexus.Dial('#filter_dial1',{
   'size': [75,75],
@@ -141,6 +154,8 @@ var filter_dial1 = new Nexus.Dial('#filter_dial1',{
   'step': 1,
   'value': 1000
 })
+ filter_dial1.colorize("accent","#FFB00D")
+
 
 var filter_number1 = new Nexus.Number('#filter_number1',{
   'size': [60,30],
@@ -150,7 +165,6 @@ var filter_number1 = new Nexus.Number('#filter_number1',{
   'step': 1000
 })
 
-filter_number1.link(filter_dial1)
 
 var filter_dial2 = new Nexus.Dial('#filter_dial2',{
   'size': [75,75],
@@ -161,6 +175,8 @@ var filter_dial2 = new Nexus.Dial('#filter_dial2',{
   'step': 1,
   'value': 1
 })
+ filter_dial2.colorize("accent","#FFB00D")
+
 
 var filter_number2 = new Nexus.Number('#filter_number2',{
   'size': [60,30],
@@ -216,24 +232,28 @@ filter_dial2.on('change',function(v) {
 
 // event-trigger
 sequencer.on('step',function(v) {
-	if (v[0] == 1) {
-		  play_kick();
-	}
-	if (v[1] == 1) {
-		  play_snare();
-	}
-	if (v[2] == 1) {
-		  play_close_hihat();
-	}
-	if (v[3] == 1) {
-		  play_lowtom();
-	}
-	if (v[4] == 1) {
-		  play_midtom();
-	}
-	if (v[5] == 1) {
-		  play_hightom();
-	}
+     set_distortion(v[0]==1);
+     if (v[1] == 1) {
+         play_mysynth();
+     }
+	   if (v[2] == 1) {
+		     play_kick();
+	   }
+	   if (v[3] == 1) {
+		     play_snare();
+	   }
+	   if (v[4] == 1) {
+		     play_close_hihat();
+	   }
+	   if (v[5] == 1) {
+		     play_lowtom();
+	   }
+	   if (v[6] == 1) {
+		     play_midtom();
+	   }
+	   if (v[7] == 1) {
+		     play_hightom();
+	   }
 })
 
 </script>
