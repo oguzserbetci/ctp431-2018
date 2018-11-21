@@ -23,31 +23,6 @@ window.onload = function() {
 
 }
 
-function MySynth(context, highpass_freq, attacktime, decaytime, sustain, releasetime) {
-    this.context = context;
-
-    this.highpass_frequency = highpass_freq;
-
-    this.amp_gain = 1.0;
-    this.attacktime = attacktime;
-    this.decaytime = decaytime;
-    this.sustain = sustain;
-    this.releasetime = releasetime;
-};
-
-// generate a wavetable for white noise 
-MySynth.prototype.noiseBuffer = function() {
-    var bufferSize = this.context.sampleRate;
-    var buffer = this.context.createBuffer(1, bufferSize, this.context.sampleRate);
-    var output = buffer.getChannelData(0);
-
-    for (var i = 0; i < bufferSize; i++) {
-        output[i] = Math.random() * 2 - 1;
-    }
-
-    return buffer;
-};
-
 // helper
 function connect(context, nodes) {
     nodes.push(context.destination);
@@ -88,6 +63,31 @@ function distortionNode(context, ammount) {
 
     return distortion;
 }
+
+function MySynth(context, highpass_freq, attacktime, decaytime, sustain, releasetime) {
+    this.context = context;
+
+    this.highpass_frequency = highpass_freq;
+
+    this.amp_gain = 1.0;
+    this.attacktime = attacktime;
+    this.decaytime = decaytime;
+    this.sustain = sustain;
+    this.releasetime = releasetime;
+};
+
+// generate a wavetable for white noise 
+MySynth.prototype.noiseBuffer = function() {
+    var bufferSize = this.context.sampleRate;
+    var buffer = this.context.createBuffer(1, bufferSize, this.context.sampleRate);
+    var output = buffer.getChannelData(0);
+
+    for (var i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+    }
+
+    return buffer;
+};
 
 MySynth.prototype.setup = function() {
     var osc1 = [];
@@ -146,8 +146,8 @@ MySynth.prototype.setup = function() {
 MySynth.prototype.trigger = function(time) {
     this.setup();
 
-    this.osc1.frequency.exponentialRampToValueAtTime(500, time + this.attacktime + this.decaytime);
-    this.osc2.frequency.exponentialRampToValueAtTime(500, time + this.attacktime + this.decaytime);
+    this.osc1.frequency.exponentialRampToValueAtTime(100, time + this.attacktime + this.decaytime);
+    this.osc2.frequency.exponentialRampToValueAtTime(100, time + this.attacktime + this.decaytime);
 
     this.osc1Envelope.gain.setValueAtTime(0.01, time);
     this.osc1Envelope.gain.linearRampToValueAtTime(this.amp_gain/3.0, time + this.attacktime);
