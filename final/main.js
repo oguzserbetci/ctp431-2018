@@ -15,21 +15,6 @@ var composer = {
     transition: [[0.2,0.3,0.2,0.2],[0.3,0.1,0.4,0.2],[0.1,0.1,0.4,0.4],[0.5,0.3,0.1,0.1]]
 }
 
-function setup() {
-    var canvas = createCanvas(windowWidth, windowHeight)
-
-    canvas.mouseClicked(touch)
-}
-
-function draw() {
-}
-
-function touch() {
-    ellipse(mouseX, mouseY, 50, 50)
-
-    play()
-}
-
 function play() {
     var note = choice(notes, composer.init)
     for (var i = 0; i < 5; i++) {
@@ -121,6 +106,7 @@ Ball.prototype = {
     react: function(b) {
         var dist = this.point.getDistance(b.point);
         if (dist < this.radius + b.radius && dist != 0) {
+            play()
             var overlap = this.radius + b.radius - dist;
             var direc = (this.point - b.point).normalize(overlap * 0.015);
             this.vector += direc;
@@ -163,15 +149,16 @@ Ball.prototype = {
 //--------------------- main ---------------------
 
 var balls = [];
-var numBalls = 18;
-for (var i = 0; i < numBalls; i++) {
-    var position = Point.random() * view.size;
+
+tool.onMouseDown = function(event) {
+    var position = event.point;
     var vector = new Point({
         angle: 360 * Math.random(),
         length: Math.random() * 10
     });
     var radius = Math.random() * 60 + 60;
     balls.push(new Ball(radius, position, vector));
+    // play()
 }
 
 function onFrame() {
