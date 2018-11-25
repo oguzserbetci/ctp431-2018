@@ -39,7 +39,6 @@ function biasedChoice(p) {
     thrs = 0
     for (var i = 0; i < p.length; i++) {
         thrs += p[i]
-        console.log(thrs)
         if (rand <= thrs) {
             return Math.floor(rand * p.length)
         }
@@ -70,7 +69,7 @@ function Ball(r, p, v) {
         //     brightness: 1
         // },
         fillColor: randomChoice(colors),
-        blendMode: 'lighter'
+        blendMode: 'negation'
     });
 
     for (var i = 0; i < this.numSegment; i++) {
@@ -96,13 +95,28 @@ Ball.prototype = {
     checkBorders: function() {
         var size = view.size;
         if (this.point.x < -this.radius)
-            this.point.x = size.width + this.radius;
+        {
+            // balls.splice(balls.indexOf(this))
+            this.path.remove()
+            // this.point.x = size.width + this.radius;
+        }
         if (this.point.x > size.width + this.radius)
-            this.point.x = -this.radius;
+        {
+            // balls.splice(balls.indexOf(this))
+            this.path.remove()
+            // this.point.x = -this.radius;
+        }
         if (this.point.y < -this.radius)
-            this.point.y = size.height + this.radius;
+        {
+            // balls.splice(balls.indexOf(this))
+            this.path.remove()
+            // this.point.y = size.height + this.radius;
+        }
         if (this.point.y > size.height + this.radius)
-            this.point.y = -this.radius;
+        {
+            // balls.splice(balls.indexOf(this))
+            this.path.remove()
+        }
     },
 
     updateShape: function() {
@@ -172,10 +186,11 @@ var balls = [];
 
 tool.onMouseDown = function(event) {
     var position = event.point;
-    var vector = new Point({
-        angle: 360 * Math.random(),
-        length: Math.random() * 10
-    });
+    // var vector = new Point({
+    //     angle: 360 * Math.random(),
+    //     length: Math.random() * 10
+    // });
+    var vector = new Point({angle: 0, length: 0});
     var radius = Math.random() * 60 + 60;
     balls.push(new Ball(radius, position, vector));
     play()
