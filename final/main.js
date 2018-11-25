@@ -14,32 +14,45 @@ var notes = ['C4', 'E4', 'G4', 'B4']
 var composer = {
     init: [0.7, 0.1, 0.1, 0.1],
     transition: [
-        [0.2, 0.3, 0.2, 0.2],
+        [0.2, 0.4, 0.2, 0.2],
         [0.3, 0.1, 0.4, 0.2],
         [0.1, 0.1, 0.4, 0.4],
         [0.5, 0.3, 0.1, 0.1]
     ]
 }
 
-
-
 function play() {
-    var note = choice(notes, composer.init)
+    var note_ind = biasedChoice(composer.init)
     for (var i = 0; i < 5; i++) {
+        var note = notes[note_ind]
         console.log(note)
-        //play a middle 'C' for the duration of an 8th note
+
+        //play a note for the duration of an 8th note
         synth.triggerAttackRelease(note, '8n', Tone.now() + i)
 
-        note = choice(notes, composer.transition[notes.indexOf(note)])
+        note_ind = biasedChoice(composer.transition[note_ind])
     }
 }
 
-function choice(arr, p) {
-    ind = Math.floor(Math.random() * p.length)
-    return arr[ind]
+function biasedChoice(p) {
+    rand = Math.random()
+    thrs = 0
+    for (var i = 0; i < p.length; i++) {
+        thrs += p[i]
+        console.log(thrs)
+        if (rand <= thrs) {
+            return Math.floor(rand * p.length)
+        }
+    }
+}
+
+function randomChoice(arr) {
+    rand = Math.random()
+    return arr[Math.floor(rand * arr.length)]
 }
 
 //-------------------- ball --------------------
+var colors = ['#f19066', '#f5cd79', '#546de5', '#e15f41', '#c44569', '#574b90', '#f78fb3', '#3dc1d3', '#e66767']
 
 function Ball(r, p, v) {
     this.radius = r;
@@ -51,11 +64,12 @@ function Ball(r, p, v) {
     this.boundOffsetBuff = [];
     this.sidePoints = [];
     this.path = new Path({
-        fillColor: {
-            hue: Math.random() * 360,
-            saturation: 1,
-            brightness: 1
-        },
+        // fillColor: {
+        //     hue: Math.random() * 365.0,
+        //     saturation: 1,
+        //     brightness: 1
+        // },
+        fillColor: randomChoice(colors),
         blendMode: 'lighter'
     });
 
