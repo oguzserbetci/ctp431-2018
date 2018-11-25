@@ -4,8 +4,8 @@ var distortion = new Tone.Distortion(0.3)
 distortion.wet = 0
 var tremolo = new Tone.Tremolo().start()
 var reverb = new Tone.Reverb()
-reverb.wet = 1
-reverb.delay = 1
+reverb.decay = 5
+reverb.delay = 0.5
 reverb.generate()
 
 //create a synth and connect it to the effects and master output (your speakers)
