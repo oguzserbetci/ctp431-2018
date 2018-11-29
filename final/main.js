@@ -21,18 +21,26 @@ var composer = {
     ]
 }
 
-function play() {
-    var note_ind = biasedChoice(composer.init)
-    for (var i = 0; i < 5; i++) {
-        var note = notes[note_ind]
-        console.log(note)
-
-        //play a note for the duration of an 8th note
-        synth.triggerAttackRelease(note, '8n', Tone.now() + i)
-
+var firstNote = true
+function play(time) {
+    console.log('play')
+    var note_ind
+    if (firstNote) {
+        note_ind = biasedChoice(composer.init)
+        firstNode = false
+    } else {
         note_ind = biasedChoice(composer.transition[note_ind])
     }
+
+    var note = notes[note_ind]
+    console.log('play', note)
+
+    //play a note for the duration of an 8th note
+    synth.triggerAttackRelease(note, '8n', time)
 }
+
+Tone.Transport.scheduleRepeat(play, '2n', '2n');
+Tone.Transport.start();
 
 function biasedChoice(p) {
     rand = Math.random()
@@ -208,7 +216,6 @@ tool.onMouseDown = function(event) {
     var vector = new Point({angle: 0, length: 0});
     var radius = Math.random() * 60 + 60;
     balls.push(new Ball(radius, position, vector));
-    play();
 }
 
 function onFrame() {
