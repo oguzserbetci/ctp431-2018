@@ -27,17 +27,19 @@ var note_ind = 0
 function play(time) {
     if (transitions.length > 0) {
         console.log(transitions)
+        balls[note_ind].path.fillColor = balls[note_ind].instrument.color
         note_ind = biasedChoice(transitions[note_ind])
 
-        var note = notes[note_ind]
+        var note = balls[note_ind].instrument.note
         console.log('play', note)
 
         //play a note for the duration of an 8th note
         synth.triggerAttackRelease(note, '16n', time)
+        balls[note_ind].path.fillColor = "black"
     }
 }
 
-Tone.Transport.scheduleRepeat(play, '2n', '2n');
+Tone.Transport.scheduleRepeat(play, '2n');
 Tone.Transport.start();
 
 function biasedChoice(p) {
@@ -65,7 +67,7 @@ function updateTransitions() {
         // calculate distances
         for (var j = 0; j < balls.length; j++) {
             if (i == j) {
-                dists[i][j] = 0//balls[i].radius;
+                dists[i][j] = view.size.width;
             } else {
                 dists[i][j] = balls[i].point.getDistance(balls[j].point, squared=true)
             }
@@ -73,12 +75,10 @@ function updateTransitions() {
         // normalize distances
         var sum = 0.0//dists[i].reduce((sum,elt) => sum + elt)
         for (var j = 0; j < balls.length; j++) {
-            if (i==j) {continue}
             sum += (1.0/dists[i][j])
         }
         console.log(sum)
         for (var j = 0; j < balls.length; j++) {
-            if (i==j) {continue}
             dists[i][j] = 1.0/dists[i][j]/sum
         }
     }
@@ -86,12 +86,53 @@ function updateTransitions() {
 }
 
 //-------------------- ball --------------------
-var colors = ['#f19066', '#f5cd79', '#546de5', '#e15f41', '#c44569', '#574b90', '#f78fb3', '#3dc1d3', '#e66767']
+var instruments = [
+    {
+        color: '#f19066',
+        note: 'C4'
+    },
+    {
+        color: '#f5cd79',
+        note: 'E4'
+    },
+    {
+        color: '#546de5',
+        note: 'D4'
+    },
+    {
+        color: '#e15f41',
+        note: 'H4'
+    },
+    {
+        color: '#c44569',
+        note: 'G4'
+    },
+    {
+        color: '#574b90',
+        note: 'B4'
+    },
+    {
+        color: '#f78fb3',
+        note: 'A4'
+    },
+    {
+        color: '#3dc1d3',
+        note: 'C4'
+    },
+    {
+        color: '#e66767',
+        note: 'C4'
+    },
+]
 
 function Ball(r, p, v) {
+    this.instrument = randomChoice(instruments)
     this.radius = r;
     this.point = p;
     this.vector = v;
+    this.text = new PointText(this.point)
+    this.text.fillColor = 'white'
+    this.text.content = this.instrument.note
     this.maxVec = 15;
     this.numSegment = Math.floor(r / 3 + 2);
     this.boundOffset = [];
@@ -104,7 +145,7 @@ function Ball(r, p, v) {
         //     saturation: 1,
         //     brightness: 1
         // },
-        fillColor: randomChoice(colors),
+        fillColor: this.instrument.color,
         blendMode: 'negation'
     });
 
