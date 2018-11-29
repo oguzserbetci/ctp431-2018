@@ -23,17 +23,11 @@ var composer = {
 
 var transitions = []
 
-var firstNote = true
-var note_ind
+var note_ind = 0
 function play(time) {
     if (transitions.length > 0) {
         console.log(transitions)
-        if (transitions.length) {
-            note_ind = 0
-            firstNode = false
-        } else {
-            note_ind = biasedChoice(transitions[note_ind])
-        }
+        note_ind = biasedChoice(transitions[note_ind])
 
         var note = notes[note_ind]
         console.log('play', note)
@@ -259,9 +253,7 @@ function onFrame() {
         }
     }
 
-
     for (var i = 0, l = balls.length; i < l; i++) {
         balls[i].iterate();
     }
 }
-
