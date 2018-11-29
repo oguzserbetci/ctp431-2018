@@ -21,22 +21,26 @@ var composer = {
     ]
 }
 
+var transitions = []
+
 var firstNote = true
+var note_ind
 function play(time) {
-    console.log('play')
-    var note_ind
-    if (firstNote) {
-        note_ind = biasedChoice(composer.init)
-        firstNode = false
-    } else {
-        note_ind = biasedChoice(composer.transition[note_ind])
+    if (transitions.length > 0) {
+        console.log(transitions)
+        if (transitions.length) {
+            note_ind = 0
+            firstNode = false
+        } else {
+            note_ind = biasedChoice(transitions[note_ind])
+        }
+
+        var note = notes[note_ind]
+        console.log('play', note)
+
+        //play a note for the duration of an 8th note
+        synth.triggerAttackRelease(note, '16n', time)
     }
-
-    var note = notes[note_ind]
-    console.log('play', note)
-
-    //play a note for the duration of an 8th note
-    synth.triggerAttackRelease(note, '8n', time)
 }
 
 Tone.Transport.scheduleRepeat(play, '2n', '2n');
@@ -56,6 +60,35 @@ function biasedChoice(p) {
 function randomChoice(arr) {
     rand = Math.random()
     return arr[Math.floor(rand * arr.length)]
+}
+
+function updateTransitions() {
+    var dists = new Array(balls.length)
+    // calculate normalized distances
+    for (var i = 0; i < balls.length; i++) {
+        dists[i] = new Array(balls.length)
+        console.log(i, balls[i].point)
+        // calculate distances
+        for (var j = 0; j < balls.length; j++) {
+            if (i == j) {
+                dists[i][j] = 0//balls[i].radius;
+            } else {
+                dists[i][j] = balls[i].point.getDistance(balls[j].point, squared=true)
+            }
+        }
+        // normalize distances
+        var sum = 0.0//dists[i].reduce((sum,elt) => sum + elt)
+        for (var j = 0; j < balls.length; j++) {
+            if (i==j) {continue}
+            sum += (1.0/dists[i][j])
+        }
+        console.log(sum)
+        for (var j = 0; j < balls.length; j++) {
+            if (i==j) {continue}
+            dists[i][j] = 1.0/dists[i][j]/sum
+        }
+    }
+    transitions = dists
 }
 
 //-------------------- ball --------------------
@@ -216,6 +249,7 @@ tool.onMouseDown = function(event) {
     var vector = new Point({angle: 0, length: 0});
     var radius = Math.random() * 60 + 60;
     balls.push(new Ball(radius, position, vector));
+    updateTransitions()
 }
 
 function onFrame() {
@@ -225,26 +259,9 @@ function onFrame() {
         }
     }
 
-    // var dists = new Array(balls.length);
-    // for (var i = 0; i < balls.length - 1; i++) {
-    //     dists[i] = new Array(balls.length);
-    //     for (var j = 0; j < balls.length - 1; j++) {
-    //         console.log("hello")
-    //         if (i == j) {
-    //             console.log("Hello")
-    //             dists[i][j] = balls[i].radius;
-    //         } else {
-    //             dists[i][j] = balls[i].point.getDistance(balls[j].point)
-    //         }
-    //     }
-    // }
-    // updateMarkov(dists)
 
     for (var i = 0, l = balls.length; i < l; i++) {
         balls[i].iterate();
     }
 }
 
-function updateMarkov(dists) {
-    console.log(dists);
-}
