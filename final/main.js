@@ -3,10 +3,10 @@
 var distortion = new Tone.Distortion(0.3)
 distortion.wet = 0
 var tremolo = new Tone.Tremolo().start()
-var reverb = new Tone.Reverb()
-reverb.decay = 5
-reverb.delay = 0.5
-reverb.generate()
+var reverb = new Tone.Freeverb(0.7, 2000)
+// reverb.decay = 5
+// reverb.delay = 0.5
+// reverb.generate()
 
 //create a synth and connect it to the effects and master output (your speakers)
 var synth = new Tone.Synth().chain(distortion, tremolo, reverb, Tone.Master)
@@ -62,6 +62,7 @@ function Ball(r, p, v) {
     this.boundOffset = [];
     this.boundOffsetBuff = [];
     this.sidePoints = [];
+    this.touched = [];
     this.path = new Path({
         // fillColor: {
         //     hue: Math.random() * 365.0,
@@ -88,34 +89,39 @@ Ball.prototype = {
         this.checkBorders();
         if (this.vector.length > this.maxVec)
             this.vector.length = this.maxVec;
+        this.vector *= 0.98;
         this.point += this.vector;
         this.updateShape();
     },
 
     checkBorders: function() {
         var size = view.size;
-        if (this.point.x < -this.radius)
+        if (this.point.x < this.radius)
         {
             // balls.splice(balls.indexOf(this))
-            this.path.remove()
+            // this.path.remove()
+            this.vector = this.vector * new Point(-1, 1)
             // this.point.x = size.width + this.radius;
         }
-        if (this.point.x > size.width + this.radius)
+        if (this.point.x > size.width - this.radius)
         {
             // balls.splice(balls.indexOf(this))
-            this.path.remove()
+            // this.path.remove()
+            this.vector = this.vector * new Point(-1, 1)
             // this.point.x = -this.radius;
         }
-        if (this.point.y < -this.radius)
+        if (this.point.y < this.radius)
         {
             // balls.splice(balls.indexOf(this))
-            this.path.remove()
+            // this.path.remove()
+            this.vector = this.vector * new Point(1, -1)
             // this.point.y = size.height + this.radius;
         }
-        if (this.point.y > size.height + this.radius)
+        if (this.point.y > size.height - this.radius)
         {
             // balls.splice(balls.indexOf(this))
-            this.path.remove()
+            // this.path.remove()
+            this.vector = this.vector * new Point(1, -1)
         }
     },
 
@@ -140,7 +146,11 @@ Ball.prototype = {
     react: function(b) {
         var dist = this.point.getDistance(b.point);
         if (dist < this.radius + b.radius && dist != 0) {
-            synth.triggerAttackRelease('B3', '8n', Tone.now())
+            if (this.touched.indexOf(b) < 0 && b.touched.indexOf(this) < 0) {
+                console.log("TOUCH", this.touched)
+                this.touched.push(b);
+                synth.triggerAttackRelease('C3', '4n', Tone.now())
+            }
             var overlap = this.radius + b.radius - dist;
             var direc = (this.point - b.point).normalize(overlap * 0.015);
             this.vector += direc;
@@ -150,6 +160,11 @@ Ball.prototype = {
             b.calcBounds(this);
             this.updateBounds();
             b.updateBounds();
+        } else {
+            var ind = this.touched.indexOf(b)
+            if (ind > -1) {
+                this.touched.splice(ind)
+            }
         }
     },
 
@@ -193,7 +208,7 @@ tool.onMouseDown = function(event) {
     var vector = new Point({angle: 0, length: 0});
     var radius = Math.random() * 60 + 60;
     balls.push(new Ball(radius, position, vector));
-    play()
+    play();
 }
 
 function onFrame() {
@@ -202,7 +217,27 @@ function onFrame() {
             balls[i].react(balls[j]);
         }
     }
+
+    // var dists = new Array(balls.length);
+    // for (var i = 0; i < balls.length - 1; i++) {
+    //     dists[i] = new Array(balls.length);
+    //     for (var j = 0; j < balls.length - 1; j++) {
+    //         console.log("hello")
+    //         if (i == j) {
+    //             console.log("Hello")
+    //             dists[i][j] = balls[i].radius;
+    //         } else {
+    //             dists[i][j] = balls[i].point.getDistance(balls[j].point)
+    //         }
+    //     }
+    // }
+    // updateMarkov(dists)
+
     for (var i = 0, l = balls.length; i < l; i++) {
         balls[i].iterate();
     }
+}
+
+function updateMarkov(dists) {
+    console.log(dists);
 }
