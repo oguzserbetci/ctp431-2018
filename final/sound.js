@@ -1,5 +1,4 @@
 // ------------------- tone ----------------
-
 var distortion = new Tone.Distortion(0.8)
 var tremolo = new Tone.Tremolo().start()
 
@@ -8,8 +7,10 @@ var reverb = new Tone.Convolver(
 )
 reverb.wet = 0.4;
 
+var gain = new Tone.Gain(0.3)
+
 //create a synth and connect it to the effects and master output (your speakers)
-var synth = new Tone.Synth().chain(distortion, tremolo, reverb, Tone.Master)
+var synth = new Tone.Synth().chain(gain, distortion, tremolo, reverb, Tone.Master)
 
 async function playTouchSound(note) {
     synth.triggerAttackRelease(note, '16n')
@@ -48,15 +49,12 @@ NOTES = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C4"]
 async function updateMelody(melody) {
     var notes = []
     for (var i = 0; i < melody.length; i++) {
-        console.log("HELLO")
-        console.log("translate melody", melody[i])
         melody[i].forEach(n => notes.push({pitch: Tonal.midi(NOTES[n]), startTime:i/2, endTime:(i/2)+0.5}))
     }
     if (notes.length == 0) { console.log("empty melody"); return; }
     console.log('notes',notes)
     noteSequence = {notes: notes, totalTime: melody.length/2}
     play(noteSequence)
-    // console.log(noteSequence)
     return noteSequence
 }
 

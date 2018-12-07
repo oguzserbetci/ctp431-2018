@@ -207,6 +207,7 @@ tool.onMouseDrag = function(event) {
 tool.onMouseUp = function(event) {
     curr_ball.vector = (event.point - start_pos)*0.9
     curr_ball = undefined;
+    updateNoteSequence()
 }
 
 var notesUpdated = true
