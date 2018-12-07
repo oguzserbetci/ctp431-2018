@@ -180,6 +180,8 @@ Ball.prototype = {
             var direc = (this.point - b.point).normalize(overlap * 0.015);
             this.vector += direc;
             b.vector -= direc;
+            this.vector *= 0.95
+            b.vector *= 0.95
 
             this.calcBounds(b);
             b.calcBounds(this);
@@ -233,8 +235,7 @@ var start_pos
 tool.onMouseDown = function(event) {
     start_pos = event.point;
     var vector = new Point({angle: 0, length: 0});
-    curr_ball = new Ball(10, start_pos, vector, 36)
-    console.log(curr_ball)
+    curr_ball = new Ball(20, start_pos, vector, 36)
     balls.push(curr_ball);
 }
 
@@ -243,7 +244,7 @@ tool.onMouseDrag = function(event) {
 }
 
 tool.onMouseUp = function(event) {
-    curr_ball.vector = (event.point - start_pos)
+    curr_ball.vector = (event.point - start_pos)*0.9
     curr_ball = undefined;
     updateNoteSequence()
 }
@@ -251,7 +252,7 @@ tool.onMouseUp = function(event) {
 var notesUpdated = true
 function onFrame() {
     if (curr_ball) {
-        curr_ball.radius += 1
+        curr_ball.radius += 0.5
     }
     for (var i = 0; i < balls.length - 1; i++) {
         for (var j = i + 1; j < balls.length; j++) {
