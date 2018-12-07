@@ -273,18 +273,17 @@ function onFrame() {
     }
 }
 
-var dart_layer = new Layer();
-var fillColor = new Color('#303952')
-for (var i = NUMBEROFNOTES; i > 0; i--) {
-    var radius = i*NOTEHEIGHT;
-    var circle = new Path.Circle(CENTER,  radius)
-    circle.rotate(360/NUMBEROFSTEPS/2.0)
-    // circle.strokeColor = 'white'
-    fillColor.hue += 5
-    console.log(fillColor.brightness, fillColor.hue)
-    circle.fillColor = fillColor
-    circle.shadowColor = 'black'
-    circle.shadowBlur = fillColor
-    darts.push(circle)
-}
-var balls_layer = new Layer();
+var rect = new Path.Rectangle({
+    point: [0, 0],
+    size: [view.size.width, view.size.height],
+    strokeColor: 'white',
+});
+rect.sendToBack();
+rect.fillColor = {
+    gradient: {
+        stops: [['#7b4397', 0.05], ['#dc2430', 1]],
+        radial: true
+    },
+    origin: rect.position,
+    destination: rect.bottomRight
+};
