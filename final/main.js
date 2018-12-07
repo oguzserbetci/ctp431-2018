@@ -1,32 +1,22 @@
 var darts = [];
 var CENTER = new Point(view.size.width/2, view.size.height/2);
+var NUMBEROFNOTES = 8
+var NOTEHEIGHT = view.size.height/2/NUMBEROFNOTES
+var NUMBEROFSTEPS = 8
 console.log(CENTER)
 
-function updateTransitions() {
-    var dists = new Array(balls.length)
-    // calculate normalized distances
-    for (var i = 0; i < balls.length; i++) {
-        dists[i] = new Array(balls.length)
-        console.log(i, balls[i].point)
-        // calculate distances
-        for (var j = 0; j < balls.length; j++) {
-            if (i == j) {
-                dists[i][j] = view.size.width;
-            } else {
-                dists[i][j] = balls[i].point.getDistance(balls[j].point, squared=true)
-            }
-        }
-        // normalize distances
-        var sum = 0.0//dists[i].reduce((sum,elt) => sum + elt)
-        for (var j = 0; j < balls.length; j++) {
-            sum += (1.0/dists[i][j])
-        }
-        console.log(sum)
-        for (var j = 0; j < balls.length; j++) {
-            dists[i][j] = 1.0/dists[i][j]/sum
-        }
+var melody = {0:[], 1:[], 2:[], 3:[], 4:[], 5:[], 6:[], 7:[]}
+function updateNoteSequence() {
+    for (var i = 0; i < NUMBEROFSTEPS; i++) {
+        melody[i] = new Set()
     }
-    transitions = dists
+    for (var i = 0; i < balls.length; i++) {
+        var toCenter = balls[i].point.getDistance(CENTER)
+        noteIndex = Math.floor(toCenter / NOTEHEIGHT)
+        timeIndex = Math.floor(((balls[i].point - CENTER).angle + 180)/(360/NUMBEROFSTEPS))
+        melody[timeIndex].add(noteIndex)
+    }
+    console.log(melody)
 }
 
 //-------------------- ball --------------------
@@ -241,15 +231,10 @@ var curr_ball
 var start_pos
 tool.onMouseDown = function(event) {
     start_pos = event.point;
-    // var vector = new Point({
-    //     angle: 360 * Math.random(),
-    //     length: Math.random() * 10
-    // });
     var vector = new Point({angle: 0, length: 0});
-    // var radius = Math.random() * 60 + 60;
     curr_ball = new Ball(10, start_pos, vector, 36)
+    console.log(curr_ball)
     balls.push(curr_ball);
-    // updateTransitions()
     globals.play(balls[balls.length-1].instrument.note)
 }
 
@@ -260,9 +245,10 @@ tool.onMouseDrag = function(event) {
 tool.onMouseUp = function(event) {
     curr_ball.vector = (event.point - start_pos)
     curr_ball = undefined;
-
+    updateNoteSequence()
 }
 
+var notesUpdated = false
 function onFrame() {
     if (curr_ball) {
         curr_ball.radius += 1
@@ -273,17 +259,25 @@ function onFrame() {
         }
     }
 
+    var vectorsLength = 0
     for (var i = 0, l = balls.length; i < l; i++) {
         balls[i].iterate();
+        vectorsLength += balls[i].vector.length
+    }
+    if (vectorsLength < 0.5 && !notesUpdated) {
+        updateNoteSequence()
+        notesUpdated = true
+        console.log("NOTES UPDATED")
+    } else if (vectorsLength >= 0.5 && notesUpdated) {
+        notesUpdated = false
     }
 }
 
 var dart_layer = new Layer();
-for (var i = 6; i > 0; i--) {
-    var radius = i*50;
-    var numSegment = 8;
-    var circle = new Path.RegularPolygon(CENTER, numSegment, radius)
-    circle.fillColor = 'black'
+for (var i = NUMBEROFNOTES; i > 0; i--) {
+    var radius = i*NOTEHEIGHT;
+    var circle = new Path.RegularPolygon(CENTER, NUMBEROFSTEPS, radius)
+    circle.rotate(360/NUMBEROFSTEPS/2.0)
     circle.strokeColor = 'white'
     darts.push(circle)
 }

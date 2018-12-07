@@ -94,7 +94,7 @@ music_rnn.initialize();
 
 // Create a player to play the sequence we'll get from the model.
 rnnPlayer = new mm.Player();
-rnn_steps = 10
+rnn_steps = 20
 rnn_temperature = 2
 
 async function play(note) {
@@ -107,7 +107,9 @@ async function play(note) {
     const qns = mm.sequences.quantizeNoteSequence(note_seq, 4);
     music_rnn
         .continueSequence(qns, rnn_steps, rnn_temperature)
-        .then((sample) => rnnPlayer.start(sample));
+        .then((sample) => {rnnPlayer.start(sample)
+                          console.log(sample)});
+
 }
 
 // var model_checkpoint = 'https://storage.googleapis.com/download.magenta.tensorflow.org/models/music_vae/dljs/mel_small';
