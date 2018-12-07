@@ -14,7 +14,9 @@ function updateNoteSequence() {
         var toCenter = balls[i].point.getDistance(CENTER)
         noteIndex = Math.floor(toCenter / NOTEHEIGHT)
         timeIndex = Math.floor(((balls[i].point - CENTER).angle + 180)/(360/NUMBEROFSTEPS))
-        melody[timeIndex].add(noteIndex)
+        if (noteIndex < NUMBEROFNOTES) {
+            melody[timeIndex].add(noteIndex)
+        }
     }
     console.log(melody)
     globals.updateMelody(melody)
@@ -28,23 +30,19 @@ var INSTRUMENTS = [
     },
     {
         color: '#f5cd79',
-        note: 'E4'
-    },
-    {
-        color: '#546de5',
         note: 'D4'
     },
     {
-        color: '#e15f41',
-        note: 'H4'
+        color: '#546de5',
+        note: 'E4'
     },
     {
         color: '#c44569',
-        note: 'G4'
+        note: 'F4'
     },
     {
         color: '#574b90',
-        note: 'B4'
+        note: 'G4'
     },
     {
         color: '#f78fb3',
@@ -52,7 +50,7 @@ var INSTRUMENTS = [
     },
     {
         color: '#3dc1d3',
-        note: 'C4'
+        note: 'B4'
     },
     {
         color: '#e66767',
@@ -64,36 +62,20 @@ function randomChoice(arr) {
     return arr[Math.floor(rand * (arr.length-1))]
 }
 
-function Ball(r, p, v, numSegments, color) {
+function Ball(r, p, v) {
     this.instrument = randomChoice(INSTRUMENTS)
     this.radius = r;
     this.point = p;
     this.vector = v;
-    // this.text = new PointText(this.point)
-    // this.text.fillColor = 'white'
-    // this.text.content = this.instrument.note
     this.maxVec = 15;
-    if (numSegments !== undefined) {
-        this.numSegment = numSegments;
-    } else {
-        this.numSegment = 36;
-    }
+    this.numSegment = 36;
     this.boundOffset = [];
     this.boundOffsetBuff = [];
     this.sidePoints = [];
     this.touched = [];
-    if (color !== undefined) {
-        var fillcolor = color
-    } else {
-        var fillcolor = this.instrument.color
-    }
+
     this.path = new Path({
-        // fillColor: {
-        //     hue: Math.random() * 365.0,
-        //     saturation: 1,
-        //     brightness: 1
-        // },
-        fillColor: fillcolor,
+        fillColor: this.instrument.color,
         blendMode: 'negation'
     });
 
@@ -119,34 +101,14 @@ Ball.prototype = {
     },
 
     checkBorders: function() {
-        var size = view.size;
-        if (this.point.x < this.radius)
-        {
-            // balls.splice(balls.indexOf(this))
-            // this.path.remove()
-            this.vector = this.vector * new Point(-1, 1)
-            // this.point.x = size.width + this.radius;
+        if (!ring.contains(this.point)) {
+            this.path.fillColor.alpha = 0.1
+        } else {
+            this.path.fillColor.alpha = 1
         }
-        if (this.point.x > size.width - this.radius)
-        {
-            // balls.splice(balls.indexOf(this))
-            // this.path.remove()
-            this.vector = this.vector * new Point(-1, 1)
-            // this.point.x = -this.radius;
-        }
-        if (this.point.y < this.radius)
-        {
-            // balls.splice(balls.indexOf(this))
-            // this.path.remove()
-            this.vector = this.vector * new Point(1, -1)
-            // this.point.y = size.height + this.radius;
-        }
-        if (this.point.y > size.height - this.radius)
-        {
-            // balls.splice(balls.indexOf(this))
-            // this.path.remove()
-            this.vector = this.vector * new Point(1, -1)
-        }
+        // if (!rect.contains(this.point)) {
+        //     this.remove()
+        // }
     },
 
     updateShape: function() {
@@ -171,10 +133,8 @@ Ball.prototype = {
         var dist = this.point.getDistance(b.point);
         if (dist < this.radius + b.radius && dist != 0) {
             if (this.touched.indexOf(b) < 0 && b.touched.indexOf(this) < 0) {
-                // console.log("TOUCH", this.touched)
                 this.touched.push(b);
-                // synth.triggerAttackRelease('C3', '4n', Tone.now())
-                globals.playTouchSound()
+                globals.playTouchSound(this.instrument.note)
             }
             var overlap = this.radius + b.radius - dist;
             var direc = (this.point - b.point).normalize(overlap * 0.015);
@@ -225,6 +185,7 @@ Ball.prototype = {
 //--------------------- main ---------------------
 
 var balls = [];
+var ballsToRemove = [];
 
 globals.getBall = function(index) {
     return balls[index]
@@ -246,7 +207,6 @@ tool.onMouseDrag = function(event) {
 tool.onMouseUp = function(event) {
     curr_ball.vector = (event.point - start_pos)*0.9
     curr_ball = undefined;
-    updateNoteSequence()
 }
 
 var notesUpdated = true
@@ -265,6 +225,11 @@ function onFrame() {
         balls[i].iterate();
         vectorsLength += balls[i].vector.length
     }
+    for (var i = 0; i < ballsToRemove.length; i++) {
+        ballsToRemove[i].path.remove()
+        balls.splice(balls.indexOf(ballsToRemove[i]))
+    }
+    ballsToRemove = [];
     if (vectorsLength < 0.5 && !notesUpdated) {
         updateNoteSequence()
         notesUpdated = true
@@ -288,3 +253,9 @@ rect.fillColor = {
     origin: rect.position,
     destination: rect.bottomRight
 };
+
+var ring = new Path.Circle({
+    center: CENTER,
+    radius: NOTEHEIGHT*NUMBEROFNOTES*0.9,
+    strokeColor: 'white'
+})
