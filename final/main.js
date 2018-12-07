@@ -5,7 +5,7 @@ var NOTEHEIGHT = view.size.height/2/NUMBEROFNOTES
 var NUMBEROFSTEPS = 8
 console.log(CENTER)
 
-var melody = {0:[], 1:[], 2:[], 3:[], 4:[], 5:[], 6:[], 7:[]}
+var melody = []
 function updateNoteSequence() {
     for (var i = 0; i < NUMBEROFSTEPS; i++) {
         melody[i] = new Set()
@@ -17,6 +17,7 @@ function updateNoteSequence() {
         melody[timeIndex].add(noteIndex)
     }
     console.log(melody)
+    globals.updateMelody(melody)
 }
 
 //-------------------- ball --------------------
@@ -235,7 +236,6 @@ tool.onMouseDown = function(event) {
     curr_ball = new Ball(10, start_pos, vector, 36)
     console.log(curr_ball)
     balls.push(curr_ball);
-    globals.play(balls[balls.length-1].instrument.note)
 }
 
 tool.onMouseDrag = function(event) {
@@ -248,7 +248,7 @@ tool.onMouseUp = function(event) {
     updateNoteSequence()
 }
 
-var notesUpdated = false
+var notesUpdated = true
 function onFrame() {
     if (curr_ball) {
         curr_ball.radius += 1
@@ -274,11 +274,17 @@ function onFrame() {
 }
 
 var dart_layer = new Layer();
+var fillColor = new Color('#303952')
 for (var i = NUMBEROFNOTES; i > 0; i--) {
     var radius = i*NOTEHEIGHT;
-    var circle = new Path.RegularPolygon(CENTER, NUMBEROFSTEPS, radius)
+    var circle = new Path.Circle(CENTER,  radius)
     circle.rotate(360/NUMBEROFSTEPS/2.0)
-    circle.strokeColor = 'white'
+    // circle.strokeColor = 'white'
+    fillColor.hue += 5
+    console.log(fillColor.brightness, fillColor.hue)
+    circle.fillColor = fillColor
+    circle.shadowColor = 'black'
+    circle.shadowBlur = fillColor
     darts.push(circle)
 }
 var balls_layer = new Layer();
