@@ -1,62 +1,6 @@
-// ------------------- tone ----------------
-
-var distortion = new Tone.Distortion(0.3)
-distortion.wet = 0
-var tremolo = new Tone.Tremolo().start()
-var reverb = new Tone.Freeverb(0.7, 2000)
-// reverb.decay = 5
-// reverb.delay = 0.5
-// reverb.generate()
-
-//create a synth and connect it to the effects and master output (your speakers)
-var synth = new Tone.Synth().chain(distortion, tremolo, reverb, Tone.Master)
-var notes = ['C4', 'E4', 'G4', 'B4']
-var composer = {
-    init: [0.7, 0.1, 0.1, 0.1],
-    transition: [
-        [0.2, 0.4, 0.2, 0.2],
-        [0.3, 0.1, 0.4, 0.2],
-        [0.1, 0.1, 0.4, 0.4],
-        [0.5, 0.3, 0.1, 0.1]
-    ]
-}
-
-var transitions = []
-
-var note_ind = 0
-function play(time) {
-    if (transitions.length > 0) {
-        console.log(transitions)
-        balls[note_ind].path.fillColor = balls[note_ind].instrument.color
-        note_ind = biasedChoice(transitions[note_ind])
-
-        var note = balls[note_ind].instrument.note
-        console.log('play', note)
-
-        //play a note for the duration of an 8th note
-        synth.triggerAttackRelease(note, '16n', time)
-        balls[note_ind].path.fillColor = "black"
-    }
-}
-
-Tone.Transport.scheduleRepeat(play, '2n');
-Tone.Transport.start();
-
-function biasedChoice(p) {
-    rand = Math.random()
-    thrs = 0
-    for (var i = 0; i < p.length; i++) {
-        thrs += p[i]
-        if (rand <= thrs) {
-            return Math.floor(rand * p.length)
-        }
-    }
-}
-
-function randomChoice(arr) {
-    rand = Math.random()
-    return arr[Math.floor(rand * arr.length)]
-}
+var darts = [];
+var CENTER = new Point(view.size.width/2, view.size.height/2);
+console.log(CENTER)
 
 function updateTransitions() {
     var dists = new Array(balls.length)
@@ -86,7 +30,7 @@ function updateTransitions() {
 }
 
 //-------------------- ball --------------------
-var instruments = [
+var INSTRUMENTS = [
     {
         color: '#f19066',
         note: 'C4'
@@ -124,28 +68,41 @@ var instruments = [
         note: 'C4'
     },
 ]
+function randomChoice(arr) {
+    var rand = Math.random()
+    return arr[Math.floor(rand * (arr.length-1))]
+}
 
-function Ball(r, p, v) {
-    this.instrument = randomChoice(instruments)
+function Ball(r, p, v, numSegments, color) {
+    this.instrument = randomChoice(INSTRUMENTS)
     this.radius = r;
     this.point = p;
     this.vector = v;
-    this.text = new PointText(this.point)
-    this.text.fillColor = 'white'
-    this.text.content = this.instrument.note
+    // this.text = new PointText(this.point)
+    // this.text.fillColor = 'white'
+    // this.text.content = this.instrument.note
     this.maxVec = 15;
-    this.numSegment = Math.floor(r / 3 + 2);
+    if (numSegments !== undefined) {
+        this.numSegment = numSegments;
+    } else {
+        this.numSegment = 36;
+    }
     this.boundOffset = [];
     this.boundOffsetBuff = [];
     this.sidePoints = [];
     this.touched = [];
+    if (color !== undefined) {
+        var fillcolor = color
+    } else {
+        var fillcolor = this.instrument.color
+    }
     this.path = new Path({
         // fillColor: {
         //     hue: Math.random() * 365.0,
         //     saturation: 1,
         //     brightness: 1
         // },
-        fillColor: this.instrument.color,
+        fillColor: fillcolor,
         blendMode: 'negation'
     });
 
@@ -223,9 +180,10 @@ Ball.prototype = {
         var dist = this.point.getDistance(b.point);
         if (dist < this.radius + b.radius && dist != 0) {
             if (this.touched.indexOf(b) < 0 && b.touched.indexOf(this) < 0) {
-                console.log("TOUCH", this.touched)
+                // console.log("TOUCH", this.touched)
                 this.touched.push(b);
-                synth.triggerAttackRelease('C3', '4n', Tone.now())
+                // synth.triggerAttackRelease('C3', '4n', Tone.now())
+                globals.playTouchSound()
             }
             var overlap = this.radius + b.radius - dist;
             var direc = (this.point - b.point).normalize(overlap * 0.015);
@@ -275,19 +233,40 @@ Ball.prototype = {
 
 var balls = [];
 
+globals.getBall = function(index) {
+    return balls[index]
+}
+
+var curr_ball
+var start_pos
 tool.onMouseDown = function(event) {
-    var position = event.point;
+    start_pos = event.point;
     // var vector = new Point({
     //     angle: 360 * Math.random(),
     //     length: Math.random() * 10
     // });
     var vector = new Point({angle: 0, length: 0});
-    var radius = Math.random() * 60 + 60;
-    balls.push(new Ball(radius, position, vector));
-    updateTransitions()
+    // var radius = Math.random() * 60 + 60;
+    curr_ball = new Ball(10, start_pos, vector, 36)
+    balls.push(curr_ball);
+    // updateTransitions()
+    globals.play(balls[balls.length-1].instrument.note)
+}
+
+tool.onMouseDrag = function(event) {
+    curr_ball.point = event.point
+}
+
+tool.onMouseUp = function(event) {
+    curr_ball.vector = (event.point - start_pos)
+    curr_ball = undefined;
+
 }
 
 function onFrame() {
+    if (curr_ball) {
+        curr_ball.radius += 1
+    }
     for (var i = 0; i < balls.length - 1; i++) {
         for (var j = i + 1; j < balls.length; j++) {
             balls[i].react(balls[j]);
@@ -298,3 +277,14 @@ function onFrame() {
         balls[i].iterate();
     }
 }
+
+var dart_layer = new Layer();
+for (var i = 6; i > 0; i--) {
+    var radius = i*50;
+    var numSegment = 8;
+    var circle = new Path.RegularPolygon(CENTER, numSegment, radius)
+    circle.fillColor = 'black'
+    circle.strokeColor = 'white'
+    darts.push(circle)
+}
+var balls_layer = new Layer();
