@@ -1,11 +1,12 @@
 var darts = [];
-var CENTER = new Point(view.size.width/2, view.size.height/2);
+var CENTER = new Point(view.size.width / 2, view.size.height / 2);
 var NUMBEROFNOTES = 8
-var NOTEHEIGHT = view.size.height/2/NUMBEROFNOTES
+var NOTEHEIGHT = view.size.height / 2 / NUMBEROFNOTES
 var NUMBEROFSTEPS = 8
 console.log(CENTER)
 
 var melody = []
+
 function updateNoteSequence() {
     for (var i = 0; i < NUMBEROFSTEPS; i++) {
         melody[i] = new Set()
@@ -13,7 +14,7 @@ function updateNoteSequence() {
     for (var i = 0; i < balls.length; i++) {
         var toCenter = balls[i].point.getDistance(CENTER)
         noteIndex = Math.floor(toCenter / NOTEHEIGHT)
-        timeIndex = Math.floor(((balls[i].point - CENTER).angle + 180)/(360/NUMBEROFSTEPS))
+        timeIndex = Math.floor(((balls[i].point - CENTER).angle + 180) / (360 / NUMBEROFSTEPS))
         if (noteIndex < NUMBEROFNOTES) {
             melody[timeIndex].add(noteIndex)
         }
@@ -23,8 +24,7 @@ function updateNoteSequence() {
 }
 
 //-------------------- ball --------------------
-var INSTRUMENTS = [
-    {
+var INSTRUMENTS = [{
         color: '#f19066',
         note: 'C4'
     },
@@ -57,9 +57,10 @@ var INSTRUMENTS = [
         note: 'C4'
     },
 ]
+
 function randomChoice(arr) {
     var rand = Math.random()
-    return arr[Math.floor(rand * (arr.length-1))]
+    return arr[Math.floor(rand * (arr.length - 1))]
 }
 
 function Ball(r, p, v) {
@@ -75,7 +76,17 @@ function Ball(r, p, v) {
     this.touched = [];
 
     this.path = new Path({
-        fillColor: this.instrument.color,
+        fillColor: {
+            gradient: {
+                stops: [
+                    [this.instrument.color, 0.05],
+                    ['#dc2430', 1]
+                ],
+                radial: true
+            },
+            origin: CENTER,
+            destination: rect.bottomRight
+        },
         blendMode: 'negation'
     });
 
@@ -195,7 +206,10 @@ var curr_ball
 var start_pos
 tool.onMouseDown = function(event) {
     start_pos = event.point;
-    var vector = new Point({angle: 0, length: 0});
+    var vector = new Point({
+        angle: 0,
+        length: 0
+    });
     curr_ball = new Ball(20, start_pos, vector, 36)
     balls.push(curr_ball);
 }
@@ -205,12 +219,13 @@ tool.onMouseDrag = function(event) {
 }
 
 tool.onMouseUp = function(event) {
-    curr_ball.vector = (event.point - start_pos)*0.9
+    curr_ball.vector = (event.point - start_pos) * 0.9
     curr_ball = undefined;
     updateNoteSequence()
 }
 
 var notesUpdated = true
+
 function onFrame() {
     if (curr_ball) {
         curr_ball.radius += 0.5
@@ -248,7 +263,10 @@ var rect = new Path.Rectangle({
 rect.sendToBack();
 rect.fillColor = {
     gradient: {
-        stops: [['#7b4397', 0.05], ['#dc2430', 1]],
+        stops: [
+            ['#7b4397', 0.05],
+            ['#dc2430', 1]
+        ],
         radial: true
     },
     origin: rect.position,
@@ -257,6 +275,6 @@ rect.fillColor = {
 
 var ring = new Path.Circle({
     center: CENTER,
-    radius: NOTEHEIGHT*NUMBEROFNOTES*0.9,
+    radius: NOTEHEIGHT * NUMBEROFNOTES * 0.9,
     strokeColor: 'white'
 })

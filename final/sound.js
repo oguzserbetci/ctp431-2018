@@ -24,13 +24,73 @@ Tone.Transport.start();
 // *******
 
 // Initialize the model.
-music_rnn = new mm.MusicRNN('https://storage.googleapis.com/magentadata/js/checkpoints/music_rnn/basic_rnn');
+music_rnn = new mm.MusicRNN('https://storage.googleapis.com/download.magenta.tensorflow.org/tfjs_checkpoints/music_rnn/chord_pitches_improv');
 music_rnn.initialize();
 
 // Create a player to play the sequence we'll get from the model.
 rnnPlayer = new mm.SoundFontPlayer("https://storage.googleapis.com/magentadata/js/soundfonts/sgm_plus");
 rnn_steps = 20;
 rnn_temperature = 1.1;
+
+var chordProgressions = new Tone.CtrlMarkov({
+  0: [
+    { value: 1, probability: 0.1 },
+    { value: 2, probability: 0.01 },
+    { value: 3, probability: 0.13 },
+    { value: 4, probability: 0.52 },
+    { value: 5, probability: 0.02 },
+    { value: 6, probability: 0.22 }
+  ],
+  1: [
+    { value: 0, probability: 0.06 },
+    { value: 2, probability: 0.02 },
+    { value: 3, probability: 0.0 },
+    { value: 4, probability: 0.87 },
+    { value: 5, probability: 0.0 },
+    { value: 6, probability: 0.05 }
+  ],
+  2: [
+    { value: 0, probability: 0.0 },
+    { value: 1, probability: 0.0 },
+    { value: 3, probability: 0.0 },
+    { value: 4, probability: 0.67 },
+    { value: 5, probability: 0.33 },
+    { value: 6, probability: 0.0 }
+  ],
+  3: [
+    { value: 0, probability: 0.33 },
+    { value: 1, probability: 0.03 },
+    { value: 2, probability: 0.07 },
+    { value: 4, probability: 0.4 },
+    { value: 5, probability: 0.03 },
+    { value: 6, probability: 0.13 }
+  ],
+  4: [
+    { value: 0, probability: 0.56 },
+    { value: 1, probability: 0.22 },
+    { value: 2, probability: 0.01 },
+    { value: 3, probability: 0.04 },
+    { value: 5, probability: 0.07 },
+    { value: 6, probability: 0.11 }
+  ],
+  5: [
+    { value: 0, probability: 0.06 },
+    { value: 1, probability: 0.44 },
+    { value: 2, probability: 0.0 },
+    { value: 3, probability: 0.06 },
+    { value: 4, probability: 0.11 },
+    { value: 6, probability: 0.33 }
+  ],
+  6: [
+    { value: 0, probability: 0.8 },
+    { value: 1, probability: 0.0 },
+    { value: 2, probability: 0.0 },
+    { value: 3, probability: 0.03 },
+    { value: 4, probability: 0.0 },
+    { value: 5, probability: 0.0 }
+  ]
+});
+chordProgressions.value = 0;
 
 async function play(noteSequence) {
     if (rnnPlayer.isPlaying()) {
@@ -41,8 +101,10 @@ async function play(noteSequence) {
     const qns = mm.sequences.quantizeNoteSequence(noteSequence, 2);
     console.log('get rnn steps',noteSequence.notes.length * 2)
     music_rnn
-        .continueSequence(qns, noteSequence.notes.length * 4, rnn_temperature)
-        .then((sample) => {rnnPlayer.start(sample)});
+        .continueSequence(qns, noteSequence.notes.length * 4, rnn_temperature, ['C4'])
+        .then((sample) => {
+            rnnPlayer.start(sample)
+        });
 }
 
 NOTES = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C4"]
