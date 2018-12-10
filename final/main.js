@@ -1,26 +1,26 @@
 var darts = [];
 var CENTER = new Point(view.size.width / 2, view.size.height / 2);
-var NUMBEROFNOTES = 8
+var NUMBEROFNOTES = globals.NUMBEROFNOTES
 var NOTEHEIGHT = view.size.height / 2 / NUMBEROFNOTES
-var NUMBEROFSTEPS = 8
+var NUMBEROFSTEPS = globals.NUMBEROFSTEPS
 console.log(CENTER)
 
-var melody = []
+function updateStepSequencer() {
 
-function updateNoteSequence() {
+    var melody = new Array(NUMBEROFSTEPS);
     for (var i = 0; i < NUMBEROFSTEPS; i++) {
-        melody[i] = new Set()
+        melody[i] = new Array(NUMBEROFNOTES).fill(0)
     }
     for (var i = 0; i < balls.length; i++) {
         var toCenter = balls[i].point.getDistance(CENTER)
-        noteIndex = Math.floor(toCenter / NOTEHEIGHT)
-        timeIndex = Math.floor(((balls[i].point - CENTER).angle + 180) / (360 / NUMBEROFSTEPS))
+        var noteIndex = Math.floor(toCenter / NOTEHEIGHT)
+        var timeIndex = Math.floor(((balls[i].point - CENTER).angle + 180) / (360 / NUMBEROFSTEPS))
         if (noteIndex < NUMBEROFNOTES) {
-            melody[timeIndex].add(noteIndex)
+            melody[timeIndex][noteIndex] = Math.ceil((balls[i].radius - 20) / 5)
         }
     }
-    console.log(melody)
-    globals.updateMelody(melody)
+    console.log('melody',melody)
+    globals.updateStepSequencer(melody)
 }
 
 //-------------------- ball --------------------
@@ -205,23 +205,30 @@ globals.getBall = function(index) {
 var curr_ball
 var start_pos
 tool.onMouseDown = function(event) {
-    start_pos = event.point;
-    var vector = new Point({
-        angle: 0,
-        length: 0
-    });
-    curr_ball = new Ball(20, start_pos, vector, 36)
-    balls.push(curr_ball);
+    if (!ring.contains(event.point)) {
+        start_pos = event.point;
+        var vector = new Point({
+            angle: 0,
+            length: 0
+        });
+        curr_ball = new Ball(20, start_pos, vector, 36)
+        balls.push(curr_ball);
+    }
 }
 
 tool.onMouseDrag = function(event) {
-    curr_ball.point = event.point
+    if (curr_ball) {
+        curr_ball.point = event.point
+    }
 }
 
 tool.onMouseUp = function(event) {
-    curr_ball.vector = (event.point - start_pos) * 0.9
-    curr_ball = undefined;
-    updateNoteSequence()
+    if (curr_ball) {
+        curr_ball.vector = (event.point - start_pos) * 0.9
+        curr_ball = undefined;
+        // updateNoteSequence()
+        updateStepSequencer()
+    }
 }
 
 var notesUpdated = true
@@ -247,7 +254,8 @@ function onFrame() {
     }
     ballsToRemove = [];
     if (vectorsLength < 0.5 && !notesUpdated) {
-        updateNoteSequence()
+        // updateNoteSequence()
+        updateStepSequencer()
         notesUpdated = true
         console.log("NOTES UPDATED")
     } else if (vectorsLength >= 0.5 && notesUpdated) {
