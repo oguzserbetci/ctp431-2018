@@ -25,7 +25,6 @@ Tone.Transport.start();
 
 // Initialize the model.
 music_rnn = new mm.MusicRNN('https://storage.googleapis.com/download.magenta.tensorflow.org/tfjs_checkpoints/music_rnn/chord_pitches_improv');
-music_rnn.initialize();
 
 // Create a player to play the sequence we'll get from the model.
 rnnPlayer = new mm.SoundFontPlayer("https://storage.googleapis.com/magentadata/js/soundfonts/sgm_plus");
@@ -103,6 +102,12 @@ async function play(noteSequence) {
     music_rnn
         .continueSequence(qns, noteSequence.notes.length * 4, rnn_temperature, ['C4'])
         .then((sample) => {
+            for (var note of sample.notes) {
+                console.log(note)
+                notes.push(note)
+                playNext(note)
+            }
+            console.log(sample)
             rnnPlayer.start(sample)
         });
 }
@@ -115,10 +120,24 @@ async function updateMelody(melody) {
     }
     if (notes.length == 0) { console.log("empty melody"); return; }
     console.log('notes',notes)
-    noteSequence = {notes: notes, totalTime: melody.length/2}
-    play(noteSequence)
+    var noteSequence = {notes: notes, totalTime: melody.length/2}
+    // play(noteSequence)
     return noteSequence
 }
 
 globals = {playTouchSound: playTouchSound,
            updateMelody: updateMelody}
+
+notes = []
+function playNext(time) {
+    synth.triggerAttackRelease(notes.shift(), '16n')
+}
+
+let bufferLoadPromise = new Promise(res => Tone.Buffer.on('load', res));
+Promise.all([music_rnn.initialize(), bufferLoadPromise]).then(() => {
+    document.querySelector('#loading').remove();
+    // generateNext(Tone.now());
+    Tone.Transport.scheduleRepeat(playNext, '16n', '8n');
+    Tone.Transport.start();
+});
+
