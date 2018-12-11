@@ -39,7 +39,7 @@ var sampler = new Tone.Sampler({
     'F#6' : 'piano-f-f%236.wav'
 }, function() {
     document.querySelector('#loading').remove();
-}, 'Samples/Grand Piano/').connect(reverb);
+}, 'static/Samples/Grand Piano/').connect(reverb);
 
 // var bassSampler = new Tone.Sampler({
 //     "C4" : "basses-piz-rr1-c4.wav",

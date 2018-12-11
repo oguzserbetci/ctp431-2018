@@ -1,9 +1,15 @@
+var socket = io('http://localhost:5000');
+socket.emit('new player');
+socket.on('message', function(data) {
+    console.log(data);
+});
+
 var darts = [];
 var CENTER = new Point(view.size.width / 2, view.size.height / 2);
 var NUMBEROFNOTES = globals.NUMBEROFNOTES
 var NOTEHEIGHT = view.size.height / 2 / NUMBEROFNOTES
 var NUMBEROFSTEPS = globals.NUMBEROFSTEPS
-console.log(CENTER)
+// console.log(CENTER)
 
 function updateStepSequencer() {
 
@@ -19,7 +25,7 @@ function updateStepSequencer() {
             melody[timeIndex][noteIndex] = Math.ceil((balls[i].radius - 20) / 3)
         }
     }
-    console.log('melody',melody)
+    // console.log('melody',melody)
     globals.updateStepSequencer(melody)
 }
 
@@ -204,34 +210,65 @@ globals.getBall = function(index) {
 
 var curr_ball
 var start_pos
+
 tool.onMouseDown = function(event) {
-    if (!ring.contains(event.point)) {
-        start_pos = event.point;
-        var vector = new Point({
-            angle: 0,
-            length: 0
-        });
-        curr_ball = new Ball(20, start_pos, vector, 36)
-        balls.push(curr_ball);
-    }
+    // if (!ring.contains(event.point)) {
+        var coordinates = [event.point.x, event.point.y]
+        createBall(coordinates)
+        socket.emit('createball', coordinates)
+    // }
+}
+
+function createBall(coordinates) {
+    start_pos = new Point(coordinates);
+    var vector = new Point({
+        angle: 0,
+        length: 0
+    });
+    curr_ball = new Ball(10, start_pos, vector, 36);
+    balls.push(curr_ball);
 }
 
 tool.onMouseDrag = function(event) {
     if (curr_ball) {
-        curr_ball.point = event.point
+        var coordinates = [event.point.x, event.point.y]
+        dragBall(coordinates)
+        socket.emit('balldrag', coordinates)
     }
+}
+
+function dragBall(point) {
+    curr_ball.point = new Point(point)
 }
 
 tool.onMouseUp = function(event) {
     if (curr_ball) {
-        curr_ball.vector = (event.point - start_pos) * 0.9
-        curr_ball = undefined;
-        // updateNoteSequence()
-        updateStepSequencer()
+        var coordinates = [event.point.x, event.point.y]
+        dropBall(coordinates)
+        socket.emit('ballup', coordinates)
     }
 }
 
+function dropBall(point) {
+    curr_ball.vector = (new Point(point) - start_pos) * 0.9
+    curr_ball = undefined;
+    updateStepSequencer()
+}
+
 var notesUpdated = true
+
+socket.on('balldrag', function(point) {
+    console.log('drag')
+    dragBall(point)
+});
+socket.on('ballup', function(point) {
+    console.log('up')
+    dropBall(point)
+});
+socket.on('createball', function(point) {
+    console.log('create')
+    createBall(point)
+});
 
 function onFrame() {
     if (curr_ball) {
@@ -257,7 +294,7 @@ function onFrame() {
         // updateNoteSequence()
         updateStepSequencer()
         notesUpdated = true
-        console.log("NOTES UPDATED")
+        // console.log("NOTES UPDATED")
     } else if (vectorsLength >= 0.5 && notesUpdated) {
         notesUpdated = false
     }
