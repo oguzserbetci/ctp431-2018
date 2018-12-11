@@ -41,6 +41,19 @@ var sampler = new Tone.Sampler({
     document.querySelector('#loading').remove();
 }, 'Samples/Grand Piano/').connect(reverb);
 
+// var bassSampler = new Tone.Sampler({
+//     "C4" : "basses-piz-rr1-c4.wav",
+//     'D#3' : 'basses-piz-rr1-d%233.wav',
+//     'F#3' : 'basses-piz-rr1-d%233.wav',
+//     'F4' : 'piano-f-c4.wav',
+//     'G4' : 'piano-f-c5.wav',
+//     'A4' : 'piano-f-c6.wav',
+//     'B4' : 'piano-f-d%234.wav',
+//     'C5' : 'piano-f-d%235.wav'
+// }, function() {
+//     document.querySelector('#loading').remove();
+// }, 'Samples/Basses/').connect(reverb);
+
 // var NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 var NOTES = ['F4', 'Ab4', 'C5', 'Db5', 'Eb5', 'F5', 'Ab5']
 var STEPS = _.range(12)
@@ -52,7 +65,7 @@ var loop = new Tone.Sequence(function(time, col){
 				if (column[i] > 0){
 					  //slightly randomized velocities
 					  var vel = 1/column[i];
-            var duration = (column[i] * 2) + "n"
+            var duration = column[i] + "n"
 					  sampler.triggerAttackRelease(Tone.Frequency(NOTES[i]), column[i] + "n", time);
             console.log(NOTES[i], duration, vel)
 				}

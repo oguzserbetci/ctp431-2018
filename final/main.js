@@ -16,7 +16,7 @@ function updateStepSequencer() {
         var noteIndex = Math.floor(toCenter / NOTEHEIGHT)
         var timeIndex = Math.floor(((balls[i].point - CENTER).angle + 180) / (360 / NUMBEROFSTEPS))
         if (noteIndex < NUMBEROFNOTES) {
-            melody[timeIndex][noteIndex] = Math.ceil((balls[i].radius - 20) / 5)
+            melody[timeIndex][noteIndex] = Math.ceil((balls[i].radius - 20) / 3)
         }
     }
     console.log('melody',melody)
@@ -54,7 +54,7 @@ var INSTRUMENTS = [{
     },
     {
         color: '#e66767',
-        note: 'C4'
+        note: 'C5'
     },
 ]
 
