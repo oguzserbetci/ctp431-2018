@@ -18,18 +18,8 @@ server.listen(5000, function() {
 });
 
 // Add the WebSocket handlers
-var players = {
-    id: [game_id, opponent]
-}
-var games = {
-    0: {
-        balls: [],
-        vectors: []
-    }
-};
 io.on('connection', function(socket) {
     socket.on('new player', function() {
-        players.push(socket.id)
     });
     socket.on('createball', function(coordinates) {
         socket.broadcast.emit('createball', coordinates)
@@ -41,8 +31,3 @@ io.on('connection', function(socket) {
         socket.broadcast.emit('balldrag', coordinates)
     });
 });
-
-setInterval(function() {
-    io.sockets.emit('balls', games[0].balls);
-}, 1000 / 60);
-

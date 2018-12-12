@@ -3,10 +3,9 @@
     <head>
         <meta charset="utf-8" />
         <title> Final Project</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
         <link rel="stylesheet" href="static/style.css" type="text/css"/>
 
-        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.13.3/dist/tf.min.js"> </script>
-        <script src="https://cdn.jsdelivr.net/npm/@magenta/music@1.2"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"></script>
 
         <script src="/socket.io/socket.io.js"></script>
@@ -20,8 +19,15 @@
 
         <link href="https://fonts.googleapis.com/css?family=PT+Mono" rel="stylesheet">
     </head>
-    <body style="height: 100vh; width: 100vw; margin: 0; font-family: 'PT Mono', monospace;">
-        <div id="loading" style="display:inline; position: absolute; width:100%; height:100%; text-align:center"><p style="margin:50vh; color:white;">loading...</p></div>
-        <canvas id="myCanvas" resize hidpi="off" style="height: 100%; width: 100%; margin: 0; "></canvas>
+    <body>
+        <nav class="nav justify-content-center">
+            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                <button id="violet-button" type="button" class="btn btn-danger" onclick="globals.setBackground('red')">Violet</button>
+                <button id="dark-button" type="button" class="btn btn-dark" onclick="globals.setBackground('black')">Dark</button>
+                <button id="light-button" type="button" class="btn btn-white" onclick="globals.setBackground('white')">Light</button>
+            </div>
+        </nav>
+        <div id="loading">loading...</p></div>
+        <canvas id="myCanvas" resize hidpi="off"></canvas>
     </body>
 </html>

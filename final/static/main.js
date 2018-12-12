@@ -9,7 +9,7 @@ var CENTER = view.center;
 var NUMBEROFNOTES = globals.NUMBEROFNOTES
 var NUMBEROFSTEPS = globals.NUMBEROFSTEPS
 var RINGRADIUS = Math.min(view.size.height, view.size.width)/2 * 0.9
-// console.log(CENTER)
+globals.RINGRADIUS = RINGRADIUS
 
 var rect = new Path.Rectangle({
     point: [0, 0],
@@ -17,25 +17,65 @@ var rect = new Path.Rectangle({
     strokeColor: 'white',
 });
 rect.sendToBack();
-rect.fillColor = {
-    gradient: {
-        stops: [
-            // ['#7b4397', 0.05],
-            // ['#dc2430', 1]
-            ['grey', 0.05],
-            ['darkgray', 1]
-        ],
-        radial: true
-    },
-    origin: rect.position,
-    destination: rect.bottomRight
-};
 
 var ring = new Path.Circle({
     center: CENTER,
     radius: RINGRADIUS,
     strokeColor: 'white'
 })
+var OUTSIDECOLOR = undefined
+
+globals.setBackground = function(color) {
+    switch (color) {
+    case 'black':
+        rect.fillColor = {
+            gradient: {
+                stops: [
+                    ['#333333', 0.05],
+                    ['#555555', 1]
+                ],
+                radial: true
+            },
+            origin: rect.position,
+            destination: rect.bottomRight
+        };
+        OUTSIDECOLOR = '#555555'
+        ring.strokeColor = '#333333';
+        break;
+    case 'white':
+        rect.fillColor = {
+            gradient: {
+                stops: [
+                    ['#aaaaaa', 0.05],
+                    ['#f0f0f0', 1]
+                ],
+                radial: true
+            },
+            origin: rect.position,
+            destination: rect.bottomRight
+        };
+        ring.strokeColor = '#aaaaaa';
+        OUTSIDECOLOR = '#f0f0f0';
+        break;
+    case 'red':
+        rect.fillColor = {
+            gradient: {
+                stops: [
+                    ['#7b4397', 0.05],
+                    ['#dc2430', 1]
+                ],
+                radial: true
+            },
+            origin: rect.position,
+            destination: rect.bottomRight
+        };
+        ring.strokeColor = '#7b4397';
+        OUTSIDECOLOR = '#dc2430';
+        break;
+    }
+}
+
+globals.setBackground('white')
 
 var NOTEHEIGHT = RINGRADIUS / NUMBEROFNOTES
 
@@ -91,13 +131,8 @@ var INSTRUMENTS = [{
     },
 ]
 
-function randomChoice(arr) {
-    var rand = Math.random()
-    return arr[Math.floor(rand * (arr.length - 1))]
-}
-
 function Ball(r, p, v) {
-    this.instrument = randomChoice(INSTRUMENTS)
+    this.instrument = _.sample(INSTRUMENTS)
     this.radius = r;
     this.point = p;
     this.vector = v;
@@ -262,21 +297,17 @@ globals.getBall = function(index) {
 
 var curr_ball
 var start_pos
+var positions = []
 
 function normalize(point) {
-    console.log(point)
     point = (point - CENTER)
-    console.log(point, point.length)
     point.length /= RINGRADIUS
-    console.log(point, RINGRADIUS)
     return point
 }
 
 function denormalize(point) {
     point.length *= RINGRADIUS
     point = (point + CENTER)
-    console.log(point)
-    console.log(point)
     return point
 }
 
@@ -290,20 +321,20 @@ function toPoint(coordinates) {
 }
 
 tool.onMouseDown = function(event) {
-    if (!ring.contains(event.point)) {
+    // if (!ring.contains(event.point)) {
         var coordinates = toCoordinates(event)
         createBall(coordinates)
         socket.emit('createball', coordinates)
-    }
+    // }
 }
 
 function createBall(coordinates) {
-    start_pos = toPoint(coordinates);
+    positions.push(toPoint(coordinates))
     var vector = new Point({
         angle: 0,
         length: 0
     });
-    curr_ball = new Ball(RINGRADIUS/100, start_pos, vector);
+    curr_ball = new Ball(RINGRADIUS/100, positions[0], vector);
     balls.push(curr_ball);
 }
 
@@ -317,6 +348,7 @@ tool.onMouseDrag = function(event) {
 
 function dragBall(coordinates) {
     curr_ball.point = toPoint(coordinates)
+    positions.push(toPoint(coordinates))
 }
 
 tool.onMouseUp = function(event) {
@@ -328,9 +360,16 @@ tool.onMouseUp = function(event) {
 }
 
 function dropBall(coordinates) {
-    curr_ball.vector = (toPoint(coordinates)- start_pos) * 0.9
+    if (positions.length > 3) {
+        var start_pos = positions[positions.length - 3]
+    } else {
+        var start_pos = positions[0]
+    }
+    curr_ball.vector = (toPoint(coordinates) - start_pos) * 0.9
+    console.log('new ball with radius', curr_ball.radius)
     curr_ball = undefined;
     updateStepSequencer()
+    positions = []
 }
 
 var notesUpdated = true
@@ -350,7 +389,7 @@ socket.on('createball', function(coordinates) {
 
 function onFrame() {
     if (curr_ball) {
-        curr_ball.radius += RINGRADIUS/100
+        curr_ball.radius += RINGRADIUS/200
     }
     for (var i = 0; i < balls.length - 1; i++) {
         for (var j = i + 1; j < balls.length; j++) {
@@ -372,7 +411,6 @@ function onFrame() {
         // updateNoteSequence()
         updateStepSequencer()
         notesUpdated = true
-        // console.log("NOTES UPDATED")
     } else if (vectorsLength >= 0.5 && notesUpdated) {
         notesUpdated = false
     }
