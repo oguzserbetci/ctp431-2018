@@ -5,14 +5,41 @@ socket.on('message', function(data) {
 });
 
 var darts = [];
-var CENTER = new Point(view.size.width / 2, view.size.height / 2);
+var CENTER = view.center;
 var NUMBEROFNOTES = globals.NUMBEROFNOTES
-var NOTEHEIGHT = view.size.height / 2 / NUMBEROFNOTES
 var NUMBEROFSTEPS = globals.NUMBEROFSTEPS
+var RINGRADIUS = Math.min(view.size.height, view.size.width)/2 * 0.9
 // console.log(CENTER)
 
-function updateStepSequencer() {
+var rect = new Path.Rectangle({
+    point: [0, 0],
+    size: [view.size.width, view.size.height],
+    strokeColor: 'white',
+});
+rect.sendToBack();
+rect.fillColor = {
+    gradient: {
+        stops: [
+            // ['#7b4397', 0.05],
+            // ['#dc2430', 1]
+            ['grey', 0.05],
+            ['darkgray', 1]
+        ],
+        radial: true
+    },
+    origin: rect.position,
+    destination: rect.bottomRight
+};
 
+var ring = new Path.Circle({
+    center: CENTER,
+    radius: RINGRADIUS,
+    strokeColor: 'white'
+})
+
+var NOTEHEIGHT = RINGRADIUS / NUMBEROFNOTES
+
+function updateStepSequencer() {
     var melody = new Array(NUMBEROFSTEPS);
     for (var i = 0; i < NUMBEROFSTEPS; i++) {
         melody[i] = new Array(NUMBEROFNOTES).fill(0)
@@ -22,7 +49,7 @@ function updateStepSequencer() {
         var noteIndex = Math.floor(toCenter / NOTEHEIGHT)
         var timeIndex = Math.floor(((balls[i].point - CENTER).angle + 180) / (360 / NUMBEROFSTEPS))
         if (noteIndex < NUMBEROFNOTES) {
-            melody[timeIndex][noteIndex] = Math.ceil((balls[i].radius - 20) / 3)
+            melody[timeIndex][noteIndex] = balls[i]//Math.ceil((balls[i].radius - 10) / 3)
         }
     }
     // console.log('melody',melody)
@@ -36,31 +63,31 @@ var INSTRUMENTS = [{
     },
     {
         color: '#f5cd79',
-        note: 'D4'
+        note: 'D#3'
     },
     {
         color: '#546de5',
-        note: 'E4'
+        note: 'F#3'
     },
     {
         color: '#c44569',
-        note: 'F4'
+        note: 'C4'
     },
     {
         color: '#574b90',
-        note: 'G4'
+        note: 'D#3'
     },
     {
         color: '#f78fb3',
-        note: 'A4'
+        note: 'F#3'
     },
     {
         color: '#3dc1d3',
-        note: 'B4'
+        note: 'C4'
     },
     {
         color: '#e66767',
-        note: 'C5'
+        note: 'D#3'
     },
 ]
 
@@ -81,20 +108,8 @@ function Ball(r, p, v) {
     this.sidePoints = [];
     this.touched = [];
 
-    this.path = new Path({
-        fillColor: {
-            gradient: {
-                stops: [
-                    [this.instrument.color, 0.05],
-                    ['#dc2430', 1]
-                ],
-                radial: true
-            },
-            origin: CENTER,
-            destination: rect.bottomRight
-        },
-        blendMode: 'negation'
-    });
+    this.path = new Path();
+    this.setColor();
 
     for (var i = 0; i < this.numSegment; i++) {
         this.boundOffset.push(this.radius);
@@ -108,7 +123,7 @@ function Ball(r, p, v) {
 }
 
 Ball.prototype = {
-    iterate: function() {
+    iterate: function(point) {
         this.checkBorders();
         if (this.vector.length > this.maxVec)
             this.vector.length = this.maxVec;
@@ -126,6 +141,21 @@ Ball.prototype = {
         // if (!rect.contains(this.point)) {
         //     this.remove()
         // }
+    },
+
+    setColor: function() {
+        this.path.fillColor = {
+                gradient: {
+                    stops: [
+                        [this.instrument.color, 0.05],
+                        ['#dc2430', 1]
+                    ],
+                    radial: true
+                },
+                origin: CENTER,
+                destination: rect.bottomRight
+            },
+        this.path.blendMode = 'negation'
     },
 
     updateShape: function() {
@@ -196,6 +226,28 @@ Ball.prototype = {
     updateBounds: function() {
         for (var i = 0; i < this.numSegment; i++)
             this.boundOffset[i] = this.boundOffsetBuff[i];
+    },
+
+    trigger: function() {
+        console.log('trigger')
+        this.path.instrument = randomChoice(INSTRUMENTS)
+        this.path.fillColor = this.path.instrument.color
+        // this.path.fillColor.tween(
+        //     'white',
+        //     {
+        //         duration: 500,
+        //         easing: 'easeOutCubic'
+        //     }
+        // )
+        //     .then(function() {
+        //     this.path.tweenTo(
+        //         { fillColor: this.instrument.color },
+        //         {
+        //             duration: 500,
+        //             easing: 'easeInCubic'
+        //         }
+        //     )
+        // })
     }
 };
 
@@ -211,68 +263,94 @@ globals.getBall = function(index) {
 var curr_ball
 var start_pos
 
+function normalize(point) {
+    console.log(point)
+    point = (point - CENTER)
+    console.log(point, point.length)
+    point.length /= RINGRADIUS
+    console.log(point, RINGRADIUS)
+    return point
+}
+
+function denormalize(point) {
+    point.length *= RINGRADIUS
+    point = (point + CENTER)
+    console.log(point)
+    console.log(point)
+    return point
+}
+
+function toCoordinates(event) {
+    var relativePoint = normalize(event.point)
+    return [relativePoint.x, relativePoint.y]
+}
+
+function toPoint(coordinates) {
+    return denormalize(new Point(coordinates));
+}
+
 tool.onMouseDown = function(event) {
-    // if (!ring.contains(event.point)) {
-        var coordinates = [event.point.x, event.point.y]
+    if (!ring.contains(event.point)) {
+        var coordinates = toCoordinates(event)
         createBall(coordinates)
         socket.emit('createball', coordinates)
-    // }
+    }
 }
 
 function createBall(coordinates) {
-    start_pos = new Point(coordinates);
+    start_pos = toPoint(coordinates);
     var vector = new Point({
         angle: 0,
         length: 0
     });
-    curr_ball = new Ball(10, start_pos, vector, 36);
+    curr_ball = new Ball(RINGRADIUS/100, start_pos, vector);
     balls.push(curr_ball);
 }
 
 tool.onMouseDrag = function(event) {
     if (curr_ball) {
-        var coordinates = [event.point.x, event.point.y]
+        var coordinates = toCoordinates(event)
         dragBall(coordinates)
         socket.emit('balldrag', coordinates)
     }
 }
 
-function dragBall(point) {
-    curr_ball.point = new Point(point)
+function dragBall(coordinates) {
+    curr_ball.point = toPoint(coordinates)
 }
 
 tool.onMouseUp = function(event) {
     if (curr_ball) {
-        var coordinates = [event.point.x, event.point.y]
+        var coordinates = toCoordinates(event)
         dropBall(coordinates)
         socket.emit('ballup', coordinates)
     }
 }
 
-function dropBall(point) {
-    curr_ball.vector = (new Point(point) - start_pos) * 0.9
+function dropBall(coordinates) {
+    curr_ball.vector = (toPoint(coordinates)- start_pos) * 0.9
     curr_ball = undefined;
     updateStepSequencer()
 }
 
 var notesUpdated = true
 
-socket.on('balldrag', function(point) {
+socket.on('balldrag', function(coordinates) {
     console.log('drag')
-    dragBall(point)
+    dragBall(coordinates)
 });
-socket.on('ballup', function(point) {
+socket.on('ballup', function(coordinates) {
     console.log('up')
-    dropBall(point)
+    dropBall(coordinates)
 });
-socket.on('createball', function(point) {
+socket.on('createball', function(coordinates) {
     console.log('create')
-    createBall(point)
+    createBall(coordinates)
 });
 
 function onFrame() {
     if (curr_ball) {
-        curr_ball.radius += 0.5
+        curr_ball.radius += RINGRADIUS/100
     }
     for (var i = 0; i < balls.length - 1; i++) {
         for (var j = i + 1; j < balls.length; j++) {
@@ -299,27 +377,3 @@ function onFrame() {
         notesUpdated = false
     }
 }
-
-var rect = new Path.Rectangle({
-    point: [0, 0],
-    size: [view.size.width, view.size.height],
-    strokeColor: 'white',
-});
-rect.sendToBack();
-rect.fillColor = {
-    gradient: {
-        stops: [
-            ['#7b4397', 0.05],
-            ['#dc2430', 1]
-        ],
-        radial: true
-    },
-    origin: rect.position,
-    destination: rect.bottomRight
-};
-
-var ring = new Path.Circle({
-    center: CENTER,
-    radius: NOTEHEIGHT * NUMBEROFNOTES * 0.9,
-    strokeColor: 'white'
-})
