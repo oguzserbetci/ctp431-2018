@@ -39,3 +39,8 @@ Prepare 7-8 minute long presentation to introduce your final project.
 - Have fun with it!
 
 
+## Colors
+https://flatuicolors.com/
+
+## Inspirations
+Tero Parviainen's awesome [JavaScript Systems Music](https://teropa.info/blog/2016/07/28/javascript-systems-music.html) tutorial.

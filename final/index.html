@@ -8,8 +8,6 @@
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"></script>
 
-        <script src="/socket.io/socket.io.js"></script>
-
         <script type="text/javascript" src="static/Tone.js"></script>
         <script src="static/tonal.min.js"></script>
         <script type="text/javascript" src="static/sound.js"></script>
@@ -27,7 +25,18 @@
                 <button id="light-button" type="button" class="btn btn-white" onclick="globals.setBackground('white')">Light</button>
             </div>
         </nav>
-        <div id="loading">loading...</p></div>
+        <div id="loading"><p style="margin:50vh;">loading... </p></div>
         <canvas id="myCanvas" resize hidpi="off"></canvas>
+        <div id="description">
+            <h3>Final term project: Music and Audio Computing CTP431 @ KAIST</h3>
+            <h4>An infinite loop of ambient.</h4>
+            <p>The circle is a step sequencer, the closer a circle gets to the center of the ring, lower the note. But notes are out of sync, which gives the sequence a longer field. They meet at every 80 steps. The instrument is selected randomly.</p>
+
+            <hr>
+            <h4>Inspiration</h4>
+            <p>Immersive game <a href="https://bellwoods.xyz/">bellwoods</a></p>
+            <p>Tero Parviainen's awesome <a href="https://teropa.info/blog/2016/07/28/javascript-systems-music.html">JavaScript Systems Music</a> tutorial</p>
+            <p>Colors from <a href="https://flatuicolors.com/">flatuicolors</a></p>
+        </div>
     </body>
 </html>
