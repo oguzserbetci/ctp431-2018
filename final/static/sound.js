@@ -59,9 +59,9 @@ var INSTRUMENTS = {
 }
 
 var INSTRUMENTDURATION = {
-    harpSampler: 2,
-    pianoSampler: 1,
-    bassSampler: 10
+    harpSampler: 4,
+    pianoSampler: 2,
+    bassSampler: 20
 }
 
 // Notes:
@@ -103,10 +103,10 @@ var loop = new Tone.Sequence(function(time, step) {
         var column = sequence[step]
         var adjustedTime = new Tone.Time(time + (COUNTER * Tone.Time("1n") / SHIFTS[i]))
         if (column[i] !== 0) {
-            var size = column[i].radius / globals.RINGRADIUS / 3
             var instrumentName = _.sample(INSTRUMENT_NAMES)
-            var vel = Math.min(1.0, Math.max(1 / size / 2, 0.4))
-            var duration = Math.ceil(size) * INSTRUMENTDURATION[instrumentName] + "n"
+            var size = column[i].radius * 3 / globals.RINGRADIUS
+            var duration = Math.ceil(size * INSTRUMENTDURATION[instrumentName]) + "n"
+            var vel = Math.min(1.0, Math.max(1.1-size, 0.2))
             var note = Tone.Frequency(INSTRUMENTNOTES[instrumentName][i])
             console.log(instrumentName, note._val, duration, vel)
             INSTRUMENTS[instrumentName].triggerAttackRelease(note, duration, adjustedTime, vel)

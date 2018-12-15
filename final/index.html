@@ -9,7 +9,6 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"></script>
 
         <script type="text/javascript" src="static/Tone.js"></script>
-        <script type="text/javascript" src="static/tonal.min.js"></script>
         <script type="text/javascript" src="static/sound.js"></script>
 
         <script type="text/javascript" src="static/paper-full.js"></script>
@@ -29,14 +28,30 @@
         <canvas id="myCanvas" resize hidpi="off"></canvas>
         <div id="description">
             <h3>Final term project: Music and Audio Computing CTP431 @ KAIST</h3>
-            <h4>An infinite loop of ambient.</h4>
-            <p>The circle is a step sequencer, the closer a circle gets to the center of the ring, lower the note. But notes are out of sync, which gives the sequence a longer field. They meet at every 80 steps. The instrument is selected randomly.</p>
+            <h4>An infinite loop of ambient with squashy balls.</h4>
+
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/OpyDuTuNKHQ" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
             <hr>
-            <h4>Inspiration</h4>
-            <p>Immersive game <a href="https://bellwoods.xyz/">bellwoods</a></p>
-            <p>Tero Parviainen's awesome <a href="https://teropa.info/blog/2016/07/28/javascript-systems-music.html">JavaScript Systems Music</a> tutorial</p>
+
+            <h4>Technical details</h4>
+            <p>The circle is a step sequencer, the closer a circle gets to the center of the ring, lower the note. But notes are out of sync. They meet at every 80 steps. The instrument is selected randomly from piano, bass and harp.  The velocity and the duration of the sound is calculated from the size of the balls. Bigger the ball the less velocity and longer the duration for the note.</p>
+            <p>Used frameworks:</p>
+
+
+            <ul>
+                <li>paper.js</li>
+                <li>Tone.js</li>
+                <li>underscore.js</li>
+                <li>bootstrap</li>
+            </ul>
+
+
+            <h4>Acknowledgements</h4>
+            <p>Inspired by the immersive game <a href="https://bellwoods.xyz/">bellwoods</a> and Tero Parviainen's awesome <a href="https://teropa.info/blog/2016/07/28/javascript-systems-music.html">JavaScript Systems Music</a> tutorial</p>
             <p>Colors from <a href="https://flatuicolors.com/">flatuicolors</a></p>
+            <p>Sound samples from <a href="http://sso.mattiaswestlund.net/">Sonatina Symphonic Orchestra</a></p>
+            <p>The physics are adapted from the paper.js example <a href="http://paperjs.org/examples/">Candy Crash.</a></p>
         </div>
     </body>
 </html>
