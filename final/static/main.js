@@ -368,3 +368,10 @@ function onFrame() {
         notesUpdated = false
     }
 }
+
+var text = new PointText(new Point(view.size.width/2, view.size.height*0.99));
+text.justification = 'center';
+text.fillColor = OUTSIDECOLOR;
+text.content = 'Scroll down for details';
+text.fontFamily = 'monospace'
+text.blendMode = 'negation'

@@ -25,19 +25,20 @@
             </div>
         </nav>
         <div id="loading"><p style="margin:50vh;">loading... </p></div>
-        <canvas id="myCanvas" resize hidpi="off"></canvas>
+        <canvas id="myCanvas" resize></canvas>
         <div id="description">
             <h3>Final term project: Music and Audio Computing CTP431 @ KAIST</h3>
             <h4>An infinite loop of ambient with squashy balls.</h4>
 
-            <iframe width="560" height="315" src="https://www.youtube.com/embed/OpyDuTuNKHQ" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <div class="embed-responsive embed-responsive-16by9">
+            <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/OpyDuTuNKHQ" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
 
             <hr>
 
             <h4>Technical details</h4>
             <p>The circle is a step sequencer, the closer a circle gets to the center of the ring, lower the note. But notes are out of sync. They meet at every 80 steps. The instrument is selected randomly from piano, bass and harp.  The velocity and the duration of the sound is calculated from the size of the balls. Bigger the ball the less velocity and longer the duration for the note.</p>
             <p>Used frameworks:</p>
-
 
             <ul>
                 <li>paper.js</li>
@@ -46,7 +47,6 @@
                 <li>bootstrap</li>
             </ul>
 
-
             <h4>Acknowledgements</h4>
             <p>Inspired by the immersive game <a href="https://bellwoods.xyz/">bellwoods</a> and Tero Parviainen's awesome <a href="https://teropa.info/blog/2016/07/28/javascript-systems-music.html">JavaScript Systems Music</a> tutorial</p>
             <p>Colors from <a href="https://flatuicolors.com/">flatuicolors</a></p>
@@ -54,4 +54,12 @@
             <p>The physics are adapted from the paper.js example <a href="http://paperjs.org/examples/">Candy Crash.</a></p>
         </div>
     </body>
+    <script>
+     var canvas = document.getElementById("myCanvas");
+     var ctx = canvas.getContext("2d");
+     ctx.font = "30px Comic Sans MS";
+     ctx.fillStyle = "red";
+     ctx.textAlign = "center";
+     ctx.fillText("Hello World", canvas.width/2, canvas.height/2);
+    </script>
 </html>
